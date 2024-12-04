@@ -1,0 +1,103 @@
+{% extends 'baseAuth.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/tech_support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Tech Support</h1>
+    <p>Please fill out the form below to contact our support team. We are here to help!</p>
+
+    {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Full Name Field -->
+        <div class="mb-3">
+            <label for="full_name" class="form-label">Full Name</label>
+            <input type="text" name="full_name" id="full_name" class="form-control" autocomplete="name" value="{{ form.full_name.value|default:'' }}">
+        </div>
+
+        <!-- Email Field -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" name="email" id="email" class="form-control" autocomplete="email" value="{{ form.email.value|default:'' }}">
+        </div>
+
+        <!-- Phone Number (optional) -->
+        <div class="mb-3">
+            <label for="phone_number" class="form-label">Phone Number (optional)</label>
+            <input type="tel" name="phone_number" id="phone_number" class="form-control" autocomplete="tel" value="{{ form.phone_number.value|default:'' }}">
+        </div>
+
+        <!-- Issue Description -->
+        <div class="mb-3">
+            <label for="issue_description" class="form-label">Please describe your issue in detail.</label>
+            <textarea name="issue_description" id="issue_description" class="form-control" rows="4" autocomplete="off">{{ form.issue_description.value|default:'' }}</textarea>
+        </div>
+
+        <!-- Attachment Field -->
+        <div class="mb-3">
+            <label for="attachment" class="form-label">Attach screenshots or documents to help us understand your issue better.</label>
+            <input type="file" name="attachment" id="attachment" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <!-- Button to Navigate to Admin Login -->
+    <button id="adminLoginButton" class="btn btn-secondary mt-4">Back</button>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" data-backdrop="false" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p>Sending email...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" data-backdrop="false" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p>Email sent successfully!</p>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" data-backdrop="false" id="errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p>Error sending email. Please try again.</p>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/tech_support.js' %}"></script>
+{% endblock %}

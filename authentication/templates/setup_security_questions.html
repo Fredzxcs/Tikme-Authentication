@@ -1,0 +1,68 @@
+{% extends 'baseAuth.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/setup_questions_password.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <h2 class="form-title">Set Up Security Questions</h2>
+    <form method="post" action="{% url 'setup_security_questions' %}" id="security-questions-form">
+
+        {% csrf_token %}
+        <input type="hidden" name="token" value="{{ token }}">
+        <input type="hidden" name="uidb64" value="{{ uidb64 }}">
+
+        <div class="form-group">
+            {{ form.security_question_1.label_tag }}
+            {{ form.security_question_1 }}
+        </div>
+        <div class="form-group">
+            {{ form.security_answer_1.label_tag }}
+            <div class="input-group">
+                {{ form.security_answer_1 }}
+                <span class="eye-icon" onclick="toggleVisibility('id_security_answer_1')">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.security_question_2.label_tag }}
+            {{ form.security_question_2 }}
+        </div>
+        <div class="form-group">
+            {{ form.security_answer_2.label_tag }}
+            <div class="input-group">
+                {{ form.security_answer_2 }}
+                <span class="eye-icon" onclick="toggleVisibility('id_security_answer_2')">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.security_question_3.label_tag }}
+            {{ form.security_question_3 }}
+        </div>
+        <div class="form-group">
+            {{ form.security_answer_3.label_tag }}
+            <div class="input-group">
+                {{ form.security_answer_3 }}
+                <span class="eye-icon" onclick="toggleVisibility('id_security_answer_3')">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <p id="error-message" class="error-message d-none">Please choose different questions for each field.</p>
+        <button type="button" class="btn-submit" onclick="submitSecurityAnswers(event)">Next</button>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/setup_security_questions.js' %}"></script>
+{% endblock %}

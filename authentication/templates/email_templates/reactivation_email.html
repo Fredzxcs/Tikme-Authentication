@@ -1,0 +1,89 @@
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reactivation_email.css' %}">
+{% endblock %}
+
+{% block content %}
+<body style="background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <!-- LOGO -->
+        <tr>
+            <td bgcolor="#f4f4f4" align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td align="center" valign="top" style="padding: 40px 10px 40px 10px;"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- HEADER -->
+        <tr>
+            <td bgcolor="#f4f4f4" align="center" style="padding: 0px 10px 0px 10px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 2px 2px 0px 0px;">
+                            <img src="{% static 'images/tikme-logo.png' %}" alt="tikme-logo" style="width: 200px;">
+                        </td>   
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- MAIN CONTENT -->
+        <tr>
+            <td bgcolor="#f4f4f4" align="center" style="padding: 0px 10px 0px 10px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <!-- Personalized Greeting -->
+                        <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 20px 30px; color: #000000; font-family: 'Montserrat bold', Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 25px;">
+                            <p>Hi, <strong>{{ username }}</strong>!</p>
+                            <p>Kindly verify your email to complete your account registration.</p>
+                        </td>
+                    </tr>
+                    <!-- VERIFY BUTTON -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 60px 30px;">
+                            <table border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center" style="border-radius: 30px;" bgcolor="#000000">
+                                        <a href="{{ full_link }}" target="_blank" style="font-size: 20px; font-family: 'Montserrat Bold', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 10px 55px; border-radius: 2px; display: inline-block;">VERIFY NOW</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- URL COPY -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0px 30px 0px 30px; color: #000000; font-family: 'Montserrat', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 550; line-height: 25px;">
+                            <p style="margin: 0;">Alternatively, you can copy this URL to your browser:</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 20px 30px; color: #666666; font-family: 'Montserrat', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 550; line-height: 25px;">
+                            <p style="margin: 0;"><a href="{{ full_link }}" target="_blank" style="color: #29ABE2;">{{ full_link }}</a></p>
+                        </td>
+                    </tr>   
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0px 30px 20px 30px; color: #000000; font-family: 'Montserrat', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 25px;">
+                            <p style="margin: 0;">The link will be valid for the next 24 hours.</p>
+                        </td>
+                    </tr>
+                    <!-- USERNAME REMINDER -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0px 30px 20px 30px; color: #000000; font-family: 'Montserrat', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 25px;">
+                            <p style="margin: 0;">Your username: <strong>{{ username }}</strong></p>
+                        </td>
+                    </tr>
+                    <!-- CONTACT -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0px 30px 40px 30px; border-radius: 0px 0px 4px 4px; color: #000000; font-family: 'Montserrat', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 25px;">
+                            <p style="margin: 0;">Contact us at <a href="mailto:tikmesupp@gmail.com" style="color: #29ABE2;">tikmesupp@gmail.com</a></p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+{% endblock %}

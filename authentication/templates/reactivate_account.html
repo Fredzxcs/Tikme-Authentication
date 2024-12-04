@@ -1,0 +1,63 @@
+{% extends 'baseAuth.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'css/reactivate_account.css' %}" rel="stylesheet">
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <h1>Reactivate Account</h1>
+    <form method="post" action="{% url 'reactivate_account' uidb64=uidb64 token=token %}">
+        {% csrf_token %}
+        <!-- Security Questions Section -->
+        <div id="security-questions">
+            <div class="form-group">
+                <label for="security_question_1">Security Question 1</label>
+                <select class="form-control" id="security_question_1" name="security_question_1" required>
+                    {% for question in security_questions %}
+                        <option value="{{ question }}">{{ question }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" class="form-control mt-2" name="security_answer_1" placeholder="Type your answer here..." required>
+            </div>
+            <div class="form-group">
+                <label for="security_question_2">Security Question 2</label>
+                <select class="form-control" id="security_question_2" name="security_question_2" required>
+                    {% for question in security_questions %}
+                        <option value="{{ question }}">{{ question }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" class="form-control mt-2" name="security_answer_2" placeholder="Type your answer here..." required>
+            </div>
+            <div class="form-group">
+                <label for="security_question_3">Security Question 3</label>
+                <select class="form-control" id="security_question_3" name="security_question_3" required>
+                    {% for question in security_questions %}
+                        <option value="{{ question }}">{{ question }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" class="form-control mt-2" name="security_answer_3" placeholder="Type your answer here..." required>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" onclick="showPasswordSection()">Next</button>
+        </div>
+        <!-- Password Section -->
+        <div id="password-section" style="display: none;">
+            <div class="form-group">
+                <label for="password">New Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Set Password</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_login.js' %}"></script>
+{% endblock %}

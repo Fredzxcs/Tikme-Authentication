@@ -1,0 +1,32 @@
+{% extends 'baseAuth.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/invalid_link.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        {% if token_status == "used" %}
+            Link Already Used
+        {% elif token_status == "invalid" %}
+            Invalid Link
+        {% else %}
+            Unknown Error
+        {% endif %}
+    </h1>
+
+    <p>
+        {% if token_status == "used" %}
+            The link you have used has already been completed or activated. If you believe this is an error, please contact your system administrator for assistance.
+        {% elif token_status == "invalid" %}
+            The link you have used is invalid or has expired. Please ensure you have copied the link correctly. If the issue persists, contact your system administrator for assistance.
+        {% else %}
+            An unknown error has occurred. Please try again later or contact your system administrator.
+        {% endif %}
+    </p>
+
+    <a href="{% url 'admin_login' %}" class="btn btn-primary">Back to Login</a>
+</div>
+{% endblock %}

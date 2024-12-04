@@ -1,0 +1,71 @@
+/* General container and layout */
+.container {
+    max-width: 800px;
+    background-color: #f1f5f9;  /* Light background */
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Title */
+h1 {
+    color: #61396f; /* Similar blue as seen in the screenshot */
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+/* Form labels */
+.form-label {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* Input fields */
+input[type="text"], 
+input[type="email"],
+input[type="tel"],
+textarea,
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Textarea styling */
+textarea {
+    resize: none; /* Prevent resizing */
+}
+
+/* Buttons */
+button[type="submit"] {
+    background-color: #61396f;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #003399; /* Darken the button on hover */
+}
+
+/* Responsive design for mobile screens */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    h1 {
+        font-size: 1.75rem;
+    }
+    button[type="submit"] {
+        width: 100%; /* Make the button take full width on smaller screens */
+    }
+}

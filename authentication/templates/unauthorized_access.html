@@ -1,0 +1,53 @@
+{% extends 'baseAuth.html' %}
+
+{% block extra_css %}
+<!-- Optional: Add additional custom styling -->
+<style>
+    .container {
+        max-width: 600px;
+        margin-top: 100px;
+        padding: 30px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .container h1 {
+        color: #dc3545;
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+    .container p {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+    .container a {
+        font-size: 1.2rem;
+        color: #ffffff;
+        text-decoration: none;
+    }
+    .container a:hover {
+        text-decoration: underline;
+    }
+    .btn-custom {
+        background-color: #61396f;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        border-radius: 5px;
+        text-align: center;
+        width: 100%;
+    }
+    .btn-custom:hover {
+        background-color: #61396f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="container text-center">
+      <h1>Unauthorized Access</h1>
+      <p>You do not have permission to view this page. Please contact your administrator if you believe this is a mistake.</p>
+      <a href="{% url 'admin_login' %}" class="btn btn-custom">Go back to Admin Login</a>
+  </div>
+{% endblock %}
