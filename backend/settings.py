@@ -34,7 +34,6 @@ SIMPLE_JWT = {
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 
     'JTI_CLAIM': 'jti',
-
 }
 
 # Application definition
@@ -111,7 +110,7 @@ DATABASES = {
 }
 
 
-AUTH_USER_MODEL = 'authentication.Employee'
+AUTH_USER_MODEL = 'authentication.User'
 
 
 # Password validation
@@ -160,6 +159,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Mail Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -34,8 +34,7 @@ body, html {
 
 /* Button styles */
 .btn-primary {
-  background-color: #ee7724;
-  background-image: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+  background-color: #6f42c1;
   color: white;
   border: none;
   font-size: 1.2rem; /* Increase button text size */
@@ -159,7 +158,7 @@ p {
 }
 
 .text-login a:hover {
-  color: #b44593; /* Optional: Change color on hover */
+  color: #7d4bda; /* Optional: Change color on hover */
 }
 
 .portal-link {
@@ -170,7 +169,7 @@ p {
   }
 
 .portal-link:hover {
-  color: #b44593; /* Optional: Change color on hover */
+  color: #7f4ae2; /* Optional: Change color on hover */
 }
 
 a.btn-outline-danger {

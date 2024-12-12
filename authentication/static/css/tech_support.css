@@ -9,7 +9,7 @@
 
 /* Title */
 h1 {
-    color: #61396f; /* Similar blue as seen in the screenshot */
+    color: #6f42c1; /* Similar blue as seen in the screenshot */
     font-weight: bold;
     font-size: 2rem;
 }
@@ -43,7 +43,7 @@ textarea {
 
 /* Buttons */
 button[type="submit"] {
-    background-color: #61396f;
+    background-color: #6f42c1;
     color: #fff;
     padding: 10px 20px;
     font-size: 1rem;

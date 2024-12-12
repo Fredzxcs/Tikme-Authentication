@@ -1,73 +1,63 @@
 from rest_framework import serializers
-from .models import Employee
-from django.contrib.auth.password_validation import validate_password
-from django.utils.translation import gettext_lazy as _
+from .models import User, Status, QuestionList, Questions
 
 
-
-class EmployeeSerializer(serializers.ModelSerializer):
+class StatusSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Employee
-        fields = ['id', 'name', 'email', 'position']
+        model = Status
+        fields = ['id', 'status_name']
 
 
-# serializers.py
-class SetupSecurityQuestionsSerializer(serializers.Serializer):
-    security_question_1 = serializers.CharField(required=True)
-    security_answer_1 = serializers.CharField(required=True)
-    security_question_2 = serializers.CharField(required=True)
-    security_answer_2 = serializers.CharField(required=True)
-    security_question_3 = serializers.CharField(required=True)
-    security_answer_3 = serializers.CharField(required=True)
+class QuestionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Questions
+        fields = ['id', 'question_desc']
 
-    def save(self, user):
-        user.security_question_1 = self.validated_data['security_question_1']
-        user.security_answer_1 = self.validated_data['security_answer_1']
-        user.security_question_2 = self.validated_data['security_question_2']
-        user.security_answer_2 = self.validated_data['security_answer_2']
-        user.security_question_3 = self.validated_data['security_question_3']
-        user.security_answer_3 = self.validated_data['security_answer_3']
-        user.account_status = 'active'
-        user.save() 
+
+class QuestionListSerializer(serializers.ModelSerializer):
+    questions_FK = QuestionsSerializer()
+
+    class Meta:
+        model = QuestionList
+        fields = ['id', 'questions_FK']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    status_FK = StatusSerializer()  # Nested serializer for Status
+    question_list_FK = QuestionListSerializer()  # Nested serializer for QuestionList
+
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email', 'employee_number', 'password', 'status_FK', 'question_list_FK']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Handle nested serializers if needed
+        status_data = validated_data.pop('status_FK', None)
+        question_list_data = validated_data.pop('question_list_FK', None)
         
-class SetupPasswordSerializer(serializers.Serializer):
-    new_password1 = serializers.CharField(
-        write_only=True, 
-        style={'input_type': 'password'}, 
-        max_length=128, 
-        label="New Password"
-    )
-    new_password2 = serializers.CharField(
-        write_only=True, 
-        style={'input_type': 'password'}, 
-        max_length=128, 
-        label="Confirm Password"
-    )
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])  # Hash password
+        user.save()
 
-    def validate(self, attrs):
-        """
-        Validate that the two passwords match and comply with Django's password policies.
-        """
-        # Check if passwords match
-        if attrs['new_password1'] != attrs['new_password2']:
-            raise serializers.ValidationError("The two password fields must match.")
+        if status_data:
+            status = Status.objects.create(**status_data)
+            user.status_FK = status
 
-        # Use Django's built-in password validators
-        try:
-            validate_password(attrs['new_password1'])
-        except serializers.ValidationError as e:
-            # Return specific password validation errors
-            raise serializers.ValidationError({
-                'new_password1': list(e.messages)
-            })
-        
-        return attrs
+        if question_list_data:
+            questions_data = question_list_data.pop('questions_FK', None)
+            if questions_data:
+                questions = Questions.objects.create(**questions_data)
+                question_list = QuestionList.objects.create(questions_FK=questions)
+                user.question_list_FK = question_list
 
-    def save(self, employee):
-        """
-        Save the new password to the employee instance.
-        """
-        # Update the employee's password
-        employee.set_password(self.validated_data['new_password1'])
-        employee.save()
-        return employee
+        user.save()
+        return user
+    
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+        return instance
