@@ -10,13 +10,29 @@ urlpatterns = [
     # JWT Authentication URLs
     path('register/', views_auth.RegisterView.as_view(), name='register'),
     path('login/', views_auth.LoginView.as_view(), name='login'),
-    path('user/', views_auth.UserView.as_view(), name='user'),
+    path('users/', views_auth.UserView.as_view(), name='users'),
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
 
     # Password Management
     path('forgot_password/', views_static.forgot_pass, name='forgot_password'),
     # path('reset_password/<uidb64>/<token>/', reset_password, name='reset_password'),
     path('tech_support/', views_static.tech_support, name='tech_support'),
+
+
+    # Roles URLs
+    path('roles/', views_create.RolesListCreateView.as_view(), name='roles-create'),
+
+    # Status URLs
+    path('status/', views_create.StatusListCreateView.as_view(), name='status-create'),
+    path('status/<int:pk>/', views_create.StatusDetailView.as_view(), name='status-detail'),
+
+    # Questions URLs
+    path('questions/', views_create.QuestionsListCreateView.as_view(), name='questions-create'),
+    path('questions/<int:pk>/', views_create.QuestionsDetailView.as_view(), name='questions-detail'),
+
+    # QuestionList URLs
+    path('question-list/', views_create.QuestionListListCreateView.as_view(), name='question-list-create'),
+    path('question-list/<int:pk>/', views_create.QuestionListDetailView.as_view(), name='question-list-detail'),
 
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

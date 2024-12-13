@@ -1,6 +1,10 @@
 from rest_framework import serializers
-from .models import User, Status, QuestionList, Questions
+from .models import *
 
+class RolesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Roles
+        fields = ['id', 'role_name']
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,7 +19,7 @@ class QuestionsSerializer(serializers.ModelSerializer):
 
 
 class QuestionListSerializer(serializers.ModelSerializer):
-    questions_FK = QuestionsSerializer()
+    questions_FK = serializers.PrimaryKeyRelatedField(queryset = Questions.objects.all())
 
     class Meta:
         model = QuestionList
@@ -23,12 +27,13 @@ class QuestionListSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    status_FK = StatusSerializer()  # Nested serializer for Status
-    question_list_FK = QuestionListSerializer()  # Nested serializer for QuestionList
+    status_FK = serializers.PrimaryKeyRelatedField(queryset = Status.objects.all())
+    question_list_FK = serializers.PrimaryKeyRelatedField(queryset = QuestionList.objects.all()) # Nested serializer for QuestionList
+    roles_FK = serializers.PrimaryKeyRelatedField(queryset = Roles.objects.all())
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'employee_number', 'password', 'status_FK', 'question_list_FK']
+        fields = ['id', 'name', 'email', 'employee_number', 'password', 'roles_FK', 'status_FK', 'question_list_FK']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
