@@ -13,3 +13,6 @@ def forgot_pass(request):
 
 def tech_support(request):
     return render(request, 'tech_support.html')
+
+def success_page(request):
+    return render(request, 'system_admin_login.html')

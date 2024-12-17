@@ -6,9 +6,12 @@ urlpatterns = [
 
     # Admin Actions
     path('', views_static.landing_page, name='admin_login'),
+    path('admin_login/', views_static.landing_page, name='admin_login'),
+    path('success/', views_static.success_page, name='system_admin_login'),
 
     # JWT Authentication URLs
     path('register/', views_auth.RegisterView.as_view(), name='register'),
+    path('register-util/<int:pk>/', views_auth.RegisterViewRUD.as_view(), name='register-util'),
     path('login/', views_auth.LoginView.as_view(), name='login'),
     path('users/', views_auth.UserView.as_view(), name='users'),
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
@@ -18,7 +21,7 @@ urlpatterns = [
     # path('reset_password/<uidb64>/<token>/', reset_password, name='reset_password'),
     path('tech_support/', views_static.tech_support, name='tech_support'),
 
-
+    path('get_users/', views_create.UserListCreateView.as_view(), name='get-users'),
     # Roles URLs
     path('roles/', views_create.RolesListCreateView.as_view(), name='roles-create'),
 
@@ -34,6 +37,7 @@ urlpatterns = [
     path('question-list/', views_create.QuestionListListCreateView.as_view(), name='question-list-create'),
     path('question-list/<int:pk>/', views_create.QuestionListDetailView.as_view(), name='question-list-detail'),
 
+    path('modules/', views_create.ModulesListCreateView.as_view(), name='modules-list-create'),
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 

@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from .models import *
 
+class ModulesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Modules
+        fields = ['id', 'module_assign']
+
 class RolesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Roles
@@ -30,10 +35,21 @@ class UserSerializer(serializers.ModelSerializer):
     status_FK = serializers.PrimaryKeyRelatedField(queryset = Status.objects.all())
     question_list_FK = serializers.PrimaryKeyRelatedField(queryset = QuestionList.objects.all()) # Nested serializer for QuestionList
     roles_FK = serializers.PrimaryKeyRelatedField(queryset = Roles.objects.all())
+    modules_FK = serializers.PrimaryKeyRelatedField(queryset = Modules.objects.all())
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'employee_number', 'password', 'roles_FK', 'status_FK', 'question_list_FK']
+        fields = [
+            'id', 
+            'name', 
+            'email', 
+            'employee_number', 
+            'password', 
+            'roles_FK', 
+            'status_FK', 
+            'question_list_FK', 
+            'modules_FK'
+        ]
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

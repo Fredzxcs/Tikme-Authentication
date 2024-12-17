@@ -4,6 +4,19 @@ from ..models import *
 from ..serializers import *
 
 
+class ModulesListCreateView(views.APIView):
+    def get(self, request):
+        modules = Modules.objects.all()
+        serializer = ModulesSerializer(modules, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = ModulesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class RolesListCreateView(views.APIView):
     def get(self, request):
         roles = Roles.objects.all()
