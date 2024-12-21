@@ -1,56 +1,126 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const loginForm = document.getElementById('loginForm');
-    const errorMessageDiv = document.getElementById('errorMessage');
-    const loadingIndicator = document.getElementById('loadingIndicator');
+    const loginForm = document.getElementById('login-form');
+    const errorMessage = document.getElementById('error-message');
 
     // Handle login form submission
     if (loginForm) {
         loginForm.addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent default form submission
-
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-
-            // Clear error messages and show loading indicator
-            errorMessageDiv.style.display = 'none';
-            errorMessageDiv.textContent = '';
-            if (loadingIndicator) loadingIndicator.style.display = 'block'; // Show loading spinner
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
             // Send login request to the server
             fetch('/auth/admin_login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(),
                 },
                 body: JSON.stringify({ username, password }),
             })
-                .then(response => {
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                        throw new Error('Login failed');
-                    }
-                })
-                .catch(error => {
-                    // Hide loading spinner and display error
-                    if (loadingIndicator) loadingIndicator.style.display = 'none';
-                    errorMessageDiv.style.display = 'block';
-                    errorMessageDiv.textContent = error.message;
-                });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Login failed: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Store tokens and redirect
+                sessionStorage.setItem('accessToken', data.access_token);
+                sessionStorage.setItem('refreshToken', data.refresh_token);
+                window.location.href = data.redirect_url;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.innerText = error.message;
+            });
         });
     }
 
-    // Function to get CSRF token for Django
-    function getCSRFToken() {
-        let csrfToken = null;
-        const cookies = document.cookie.split(';');
-        cookies.forEach(cookie => {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'csrftoken') {
-                csrfToken = value;
+    // Function to refresh the access token
+    function refreshAccessToken() {
+        const refreshToken = sessionStorage.getItem('refreshToken');
+        if (refreshToken) {
+            fetch('/auth/token/refresh/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh: refreshToken }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to refresh token');
+                }
+                return response.json();
+            })
+            .then(data => {
+                sessionStorage.setItem('accessToken', data.access_token);
+            })
+            .catch(error => {
+                console.error('Error refreshing token:', error);
+                handleLogout();
+            });
+        }
+    }
+
+    // Function to handle API calls
+    function handleAPICall(url, method = 'GET', body = null) {
+        const token = sessionStorage.getItem('accessToken');
+        if (!token) {
+            handleLogout();
+            return;
+        }
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: body ? JSON.stringify(body) : null,
+        })
+        .then(response => {
+            if (response.status === 401) {
+                // If the token is expired, try to refresh it
+                refreshAccessToken().then(() => {
+                    // Retry the original API call
+                    handleAPICall(url, method, body);
+                });
+            } else if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Network response was not ok');
             }
+        })
+        .then(data => {
+            // Handle successful data
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('API call error:', error);
+            handleLogout();
         });
-        return csrfToken;
+    }
+
+    // Logout function to clear tokens and redirect
+    function handleLogout() {
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
+        window.location.href = '/auth/system_admin_login/'; // Redirect to login page
+    }
+
+    // Example of calling a protected resource on dashboard load
+    const dashboardButton = document.getElementById('dashboard-button');
+    if (dashboardButton) {
+        dashboardButton.addEventListener('click', function () {
+            handleAPICall('/auth/system_admin_dashboard/');
+        });
+    }
+
+    // Password toggle visibility function
+    window.togglePassword = function() {
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
     }
 });

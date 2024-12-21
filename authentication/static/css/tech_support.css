@@ -1,10 +1,10 @@
 /* General container and layout */
 .container {
-    max-width: 800px;
-    background-color: #f1f5f9;  /* Light background */
+    max-width: 1000px;
     border-radius: 10px;
     padding: 30px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 50px;
 }
 
 /* Title */
@@ -22,7 +22,7 @@ h1 {
     color: #333;
 }
 
-/* Input fields */
+/* General Input and Textarea Styling */
 input[type="text"], 
 input[type="email"],
 input[type="tel"],
@@ -34,12 +34,26 @@ input[type="file"] {
     border: 1px solid #ced4da;
     border-radius: 5px;
     font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for focus effect */
 }
 
-/* Textarea styling */
+/* Focus effect for all input fields and textarea */
+input[type="text"]:focus, 
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+input[type="file"]:focus {
+    border-color: #5a00e8 !important; /* Add !important to override any conflicting rules */
+    box-shadow: 0 0 5px rgba(90, 0, 232, 0.3); /* Optional glowing effect */
+    outline: none; /* Remove default browser outline */
+}
+
+/* Textarea-specific styling */
 textarea {
     resize: none; /* Prevent resizing */
+    border-radius: 5px; /* Ensure consistent border-radius */
 }
+
 
 /* Buttons */
 button[type="submit"] {
@@ -54,18 +68,42 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background-color: #003399; /* Darken the button on hover */
+    background-color: #5a00e8 ; /* Darken the button on hover */
 }
 
-/* Responsive design for mobile screens */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-    }
-    h1 {
-        font-size: 1.75rem;
-    }
-    button[type="submit"] {
-        width: 100%; /* Make the button take full width on smaller screens */
-    }
+/* Preview container styling */
+#preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Adds gap between images */
+}
+
+/* Preview image styling */
+#preview-container .preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#preview-container img {
+    max-width: 100px;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+/* Remove button styling */
+.preview-wrapper .remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

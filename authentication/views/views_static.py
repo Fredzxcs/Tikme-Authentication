@@ -15,4 +15,4 @@ def tech_support(request):
     return render(request, 'tech_support.html')
 
 def success_page(request):
-    return render(request, 'system_admin_login.html')
+    return render(request, 'admin_login.html')

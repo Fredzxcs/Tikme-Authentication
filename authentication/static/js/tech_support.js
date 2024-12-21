@@ -3,111 +3,105 @@ document.addEventListener('DOMContentLoaded', function () {
     const emailField = document.querySelector('input[type="email"]');
     const fullNameField = document.querySelector('input[name="full_name"]');
     const fileInput = document.querySelector('input[type="file"]');
-    const submitButton = document.querySelector('button[type="submit"]');
+    const previewContainer = document.getElementById('preview-container');
 
     // Modal elements
     const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
 
-    // Simple email validation (regex-based)
+    // Function to validate email format
     function validateEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
     }
 
-    // Form validation function
+    // Form validation
     function validateForm(event) {
         let isValid = true;
 
-        // Full name validation (not empty)
         if (fullNameField.value.trim() === '') {
             alert('Full Name is required.');
             isValid = false;
         }
 
-        // Email validation
         if (!validateEmail(emailField.value)) {
             alert('Please enter a valid email address.');
             isValid = false;
         }
 
-        // Prevent form submission if any validation fails
         if (!isValid) {
-            event.preventDefault();  // Prevent form submission
+            event.preventDefault(); // Prevent form submission if invalid
         }
     }
 
-    // Attach validation function to form submission
+    // File upload preview and limit functionality
+    let fileList = []; // Array to store the files
+
+    function updatePreview() {
+        previewContainer.innerHTML = ''; // Clear the preview
+
+        fileList.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'preview-wrapper';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerText = 'X';
+
+                removeBtn.addEventListener('click', function () {
+                    fileList.splice(index, 1); // Remove the file from the array
+                    updatePreview(); // Refresh the preview
+                });
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                previewContainer.appendChild(wrapper);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    fileInput.addEventListener('change', function () {
+        const newFiles = Array.from(fileInput.files);
+
+        if (fileList.length + newFiles.length > 3) {
+            alert('You can only upload up to 3 files.');
+            return;
+        }
+
+        fileList = [...fileList, ...newFiles]; // Append new files to the file list
+        updatePreview();
+
+        // Clear the input to allow adding the same file again if needed
+        fileInput.value = '';
+    });
+
+    // Handle form submission
     form.addEventListener('submit', function (event) {
-        // Show the loading modal when the form is submitted
-        loadingModal.show();
-
-        // Validate form inputs before proceeding
         validateForm(event);
-        if (event.defaultPrevented) {
-            loadingModal.hide();  // Hide loading modal if validation fails
-            return;  // Prevent submission if validation fails
-        }
 
-        // Simulate server processing with setTimeout (replace with real form submission logic)
-        setTimeout(function () {
-            // Simulate success response from server
-            const isSuccess = true; // Change this based on actual response
+        if (!event.defaultPrevented) {
+            loadingModal.show();
 
-            // Hide loading modal after form submission processing
-            loadingModal.hide();
-
-            if (isSuccess) {
-                // Show success modal on successful submission
+            // Simulate form submission
+            setTimeout(() => {
+                loadingModal.hide();
                 successModal.show();
-            } else {
-                // Show error modal if submission failed
-                errorModal.show();
-            }
-        }, 2000);  // Simulated server delay (2 seconds)
-    });
-
-    // Success Modal Handler
-    const okButton = document.querySelector('#successModal .btn-primary');
-    if (okButton) {
-        okButton.addEventListener('click', function () {
-            successModal.hide(); // Close the success modal
-            location.reload(); // Refresh the page
-        });
-    }
-
-    // Error Modal Handler
-    const closeButton = document.querySelector('#errorModal .btn-danger');
-    if (closeButton) {
-        closeButton.addEventListener('click', function () {
-            errorModal.hide(); // Close the error modal
-        });
-    }
-
-    // Optional: File input preview (for images)
-    fileInput.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (file) {
-            // Only show a preview for image files
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const previewImage = document.createElement('img');
-                    previewImage.src = e.target.result;
-                    previewImage.style.maxWidth = '100px';
-                    previewImage.style.marginTop = '10px';
-                    fileInput.insertAdjacentElement('afterend', previewImage);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                alert('Only image files can be previewed.');
-            }
+            }, 2000);
         }
     });
 
-    // Adding an event listener to the button to navigate to admin login
-    document.getElementById('adminLoginButton').addEventListener('click', function () {
-        window.location.href = '/auth/admin_login/';  // Replace '/admin-login' with the correct URL for your admin login page
+    // Back button functionality
+    const backButton = document.getElementById('adminLoginButton');
+    backButton.addEventListener('click', function () {
+        window.location.href = '/admin_login/'; // Replace with your desired URL
     });
 });

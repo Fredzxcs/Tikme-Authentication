@@ -7,7 +7,7 @@ urlpatterns = [
     # Admin Actions
     path('', views_static.landing_page, name='admin_login'),
     path('admin_login/', views_static.landing_page, name='admin_login'),
-    path('success/', views_static.success_page, name='system_admin_login'),
+    path('success/', views_static.success_page, name='admin_login'),
 
     # JWT Authentication URLs
     path('register/', views_auth.RegisterView.as_view(), name='register'),
