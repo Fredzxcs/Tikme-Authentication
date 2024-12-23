@@ -21,7 +21,7 @@ function onPageLoad() {
     // Check if the token is present and valid
     if (!token || !isTokenValid(token)) {
         alert("Your session has expired or you are not logged in. Please log in again.");
-        window.location.href = '/login'; // Redirect to the login page
+        window.location.href = '/admin_login/'; // Redirect to the login page
     }
 }
 

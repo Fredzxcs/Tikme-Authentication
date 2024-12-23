@@ -2,125 +2,70 @@ document.addEventListener('DOMContentLoaded', function () {
     const loginForm = document.getElementById('login-form');
     const errorMessage = document.getElementById('error-message');
 
-    // Handle login form submission
+    // Function to get the CSRF token from the cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
     if (loginForm) {
         loginForm.addEventListener('submit', function (event) {
             event.preventDefault();
-            const username = document.getElementById('username').value;
+
+            const employeeNumber = document.getElementById('employee_number').value;
             const password = document.getElementById('password').value;
 
-            // Send login request to the server
-            fetch('/auth/admin_login/', {
+            fetch('/admin_login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken, // Add the CSRF token to the header
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({
+                    employee_number: employeeNumber,
+                    password: password,
+                }),
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Login failed: ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Store tokens and redirect
-                sessionStorage.setItem('accessToken', data.access_token);
-                sessionStorage.setItem('refreshToken', data.refresh_token);
-                window.location.href = data.redirect_url;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorMessage.innerText = error.message;
-            });
-        });
-    }
-
-    // Function to refresh the access token
-    function refreshAccessToken() {
-        const refreshToken = sessionStorage.getItem('refreshToken');
-        if (refreshToken) {
-            fetch('/auth/token/refresh/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ refresh: refreshToken }),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to refresh token');
-                }
-                return response.json();
-            })
-            .then(data => {
-                sessionStorage.setItem('accessToken', data.access_token);
-            })
-            .catch(error => {
-                console.error('Error refreshing token:', error);
-                handleLogout();
-            });
-        }
-    }
-
-    // Function to handle API calls
-    function handleAPICall(url, method = 'GET', body = null) {
-        const token = sessionStorage.getItem('accessToken');
-        if (!token) {
-            handleLogout();
-            return;
-        }
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: body ? JSON.stringify(body) : null,
-        })
-        .then(response => {
-            if (response.status === 401) {
-                // If the token is expired, try to refresh it
-                refreshAccessToken().then(() => {
-                    // Retry the original API call
-                    handleAPICall(url, method, body);
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.detail || 'Login failed. Please try again.');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.jwt && data.redirect_to) {
+                        document.cookie = `jwt=${data.jwt}; httponly`;
+                        window.location.href = data.redirect_to;
+                    } else {
+                        throw new Error('Invalid response from server.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.textContent = error.message || 'An unexpected error occurred.';
+                    errorMessage.style.display = 'block';
                 });
-            } else if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Network response was not ok');
-            }
-        })
-        .then(data => {
-            // Handle successful data
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('API call error:', error);
-            handleLogout();
         });
     }
 
-    // Logout function to clear tokens and redirect
-    function handleLogout() {
-        sessionStorage.removeItem('accessToken');
-        sessionStorage.removeItem('refreshToken');
-        window.location.href = '/auth/system_admin_login/'; // Redirect to login page
-    }
-
-    // Example of calling a protected resource on dashboard load
-    const dashboardButton = document.getElementById('dashboard-button');
-    if (dashboardButton) {
-        dashboardButton.addEventListener('click', function () {
-            handleAPICall('/auth/system_admin_dashboard/');
-        });
-    }
-
-    // Password toggle visibility function
-    window.togglePassword = function() {
+    window.togglePassword = function () {
         const passwordInput = document.getElementById('password');
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-    }
+    };
 });

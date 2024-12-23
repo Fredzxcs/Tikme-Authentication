@@ -60,12 +60,12 @@ function submitSecurityAnswers(event) {
 
     if (!uidb64 || !token) {
         console.error("Invalid UID or token.");
-        window.location.href = "/auth/invalid_link/";
+        window.location.href = "/invalid_link/";
         return;
     }
 
     sessionStorage.setItem('security_answers', JSON.stringify(answers));
-    window.location.href = `/auth/setup_password/${uidb64}/${token}/`;
+    window.location.href = `/setup_password/${uidb64}/${token}/`;
 }
 
 // Event listeners for form submission and validations

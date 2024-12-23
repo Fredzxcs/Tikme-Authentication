@@ -9,7 +9,7 @@
 
 :root{
     /* ===== Colors ===== */
-    --primary-color: #8A2BE2;
+    --primary-color: #8A2BE2;   
     --panel-color: #FFF;
     --text-color: #8A2BE2;
     --black-light-color: #707070;
@@ -28,7 +28,6 @@
 
 body{
     min-height: 100vh;
-    background-color: var(--primary-color);
 }
 body.dark{
     --primary-color: #3A3B3C;
@@ -55,30 +54,90 @@ body.dark{
     transition: all 0.3s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #0b3cc1;
-}
-
 body.dark::-webkit-scrollbar-thumb:hover,
 body.dark .activity-data::-webkit-scrollbar-thumb:hover{
     background: #3A3B3C;
 }
 
-nav{
+.dropdown .submenu {
+    display: none; /* Initially hidden */
+    list-style: none;
+    padding-left: 60px;
+    margin: 0;
+    justify-content: center;
+}
+
+.dropdown .submenu li a {
+    color: var(--black-light-color);
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 0;
+    display: block;
+    transition: var(--tran-03);
+}
+
+.dropdown .submenu li a:hover {
+    color: var(--primary-color);
+}
+
+/* Dropdown icon rotation */
+.dropdown .dropdown-toggle {
+    display: flex;
+    align-items: center;
+   
+}
+
+.dropdown .dropdown-toggle i.dropdown-arrow {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.dropdown.active .dropdown-arrow {
+    transform: rotate(90deg); /* Rotate the arrow when active */
+}
+
+
+/* Existing Sidebar CSS */
+/* ===== Sidebar General Styling ===== */
+nav {
     position: fixed;
     top: 0;
     left: 0;
     height: 100%;
-    width: 250px;
+    width: 260px;
     padding: 10px 30px 0 0;
     background-color: var(--panel-color);
     border-right: 1px solid var(--border-color);
     transition: var(--tran-05);
+    overflow-y: auto; /* Add scrollbar */
+    overflow-x: hidden; /* Hide horizontal overflow */
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--panel-color);
 }
-nav.close{
-    width: 90px;
 
-    
+nav::-webkit-scrollbar {
+    width: 8px;
+}
+
+nav::-webkit-scrollbar-track {
+    background-color: var(--panel-color);
+}
+
+nav::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 10px;
+}
+
+nav::-webkit-scrollbar-thumb:hover {
+    background-color: #6a1ab9;
+}
+
+.menu-items {
+    padding-bottom: 20px; /* Adds space for scrollbar visibility */
+}
+
+nav.close{
+    width: 60px;
 }
 nav .logo-name{
     display: flex;
@@ -109,7 +168,7 @@ nav.close .logo_name{
 }
 nav .menu-items{
     
-    margin-top: 40px;
+    margin-top: 10px;
     height: calc(100% - 90px);
     display: flex;
     flex-direction: column;
@@ -149,7 +208,7 @@ body.dark li a:hover:before{
     color: var(--black-light-color);
 }
 .menu-items li a .link-name{
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 400;
     color: var(--black-light-color);    
     transition: var(--tran-05);
@@ -167,7 +226,6 @@ body.dark .nav-links li a:hover .link-name{
     color: var(--text-color);
 }
 .menu-items .logout-mode{
-    padding-top: 10px;
     border-top: 1px solid var(--border-color);
 }
 .menu-items .mode{
@@ -209,24 +267,224 @@ body.dark .switch:before{
     left: 20px;
 }
 
-.dashboard{
-    position: absolute;
-    left: 250px;
-    background-image: var(--panel-color);
-    min-height: 100vh;
-    width: calc(100% - 250px);
-    transition: var(--tran-05);
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between breadcrumb items */
+    margin-left: 0; /* Align breadcrumbs close to the toggle */
+    font-size: 14px;
+    color: var(--black-light-color);
+    white-space: nowrap; /* Prevent wrapping */
 }
+
+.breadcrumb-link {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: color var(--tran-03);
+}
+
+.breadcrumb-link:hover {
+    text-decoration: underline;
+    color: var(--text-color);
+}
+
+.breadcrumb-divider {
+    color: var(--black-light-color);
+    font-size: 14px;
+}
+
+.breadcrumb-link.current {
+    color: var(--black-light-color);
+    font-weight: 600; /* Emphasize current page visually */
+    cursor: default;
+}
+
+.top img {
+    margin-left: auto; /* Push the profile image to the far right */
+    width: 40px;
+    border-radius: 50%;
+}
+
+/* Profile Section */
+.profile-section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Profile Image */
+.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: box-shadow 0.3s ease;
+}
+
+.profile-img:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown Menu */
+.profile-dropdown {
+    display: none; /* Initially hidden */
+    position: absolute;
+    top: calc(100% + 10px); /* Positioned below the profile image */
+    right: 0;
+    background-color: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 150px;
+    z-index: 10;
+    padding: 10px 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Show Dropdown When the .show Class Is Applied */
+.profile-dropdown.show {
+    display: block;
+}
+
+/* Dropdown Items */
+.profile-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-dropdown ul li {
+    margin: 10px 0;
+    padding: 10px 20px;
+}
+
+.profile-dropdown ul li a {
+    text-decoration: none;
+    color: var(--black-light-color);
+    font-size: 14px;
+    transition: color 0.3s ease, background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.profile-dropdown ul li a:hover {
+    background-color: #f7f7f7;
+    color: var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Main Content Sections */
+.view-profile, .account-settings, .logs {
+    padding: 20px;
+    background-color: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.profile-info img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.update-btn {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--tran-03);
+}
+
+.update-btn:hover {
+    background-color: var(--text-color);
+}
+
+/* Settings Form */
+.account-settings form div {
+    margin-bottom: 15px;
+}
+
+.account-settings label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.account-settings input, .account-settings select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.account-settings button {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--tran-03);
+}
+
+.account-settings button:hover {
+    background-color: var(--text-color);
+}
+
+/* Activity Logs */
+.logs table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.logs th, .logs td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.logs thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.logs tbody tr:hover {
+    background-color: var(--box3-color);
+}
+
 nav.close ~ .dashboard{
     left: 73px;
     width: calc(100% - 73px);
 }
+
 .dashboard .top{
     position: fixed;
     top: 0;
-    left: 250px;
+    left: 260px;
     display: flex;
-    width: calc(100% - 250px);
+    width: calc(100% - 260px);
     justify-content: space-between;
     align-items: center;
     padding: 10px 14px;
@@ -235,138 +493,18 @@ nav.close ~ .dashboard{
     z-index: 10;
 }
 
-
 nav.close ~ .dashboard .top{
-    left: 73px;
-    width: calc(100% - 73px);
+    left: 60px;
+    width: calc(100% - 60px);
 }
 .dashboard .top .sidebar-toggle{
     font-size: 26px;
     color: var(--text-color);
     cursor: pointer;
+    margin-right: 10px;
 }
-.dashboard .top .search-box{
-    position: relative;
-    height: 45px;
-    max-width: 600px;
-    width: 100%;
-    margin: 0 30px;
-}
-.top .search-box input{
-    position: absolute;
-    border: 1px solid var(--border-color);
-    background-color: var(--panel-color);
-    padding: 0 25px 0 50px;
-    border-radius: 5px;
-    height: 100%;
-    width: 100%;
-    color: var(--text-color);
-    font-size: 15px;
-    font-weight: 400;
-    outline: none;
-}
-.top .search-box i{
-    position: absolute;
-    left: 15px;
-    font-size: 22px;
-    z-index: 10;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--black-light-color);
-}
-.top img{
-    width: 40px;
-    border-radius: 50%;
-}
-.dashboard .dash-content{
-    padding-top: 50px;
-}
-.dash-content .title{
-    display: flex;
-    align-items: center;
-    margin: 60px 0 30px 0;
-}
-.dash-content .title i{
-    position: relative;
-    height: 35px;
-    width: 35px;
-    background-color: var(--primary-color);
-    border-radius: 6px;
-    color: var(--title-icon-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
-.dash-content .title .text{
-    font-size: 24px;
-    font-weight: 500;
-    color: var(--text-color);
-    margin-left: 10px;
-}
-.dash-content .boxes{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-.dash-content .boxes .box{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 12px;
-    width: calc(100% / 3 - 15px);
-    padding: 15px 20px;
-    background-color: var(--box1-color);
-    transition: var(--tran-05);
-}
-.boxes .box i{
-    font-size: 35px;
-    color: var(--text-color);
-}
-.boxes .box .text{
-    white-space: nowrap;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text-color);
-}
-.boxes .box .number{
-    font-size: 40px;
-    font-weight: 500;
-    color: var(--text-color);
-}
-.boxes .box.box2{
-    background-color: var(--box2-color);
-}
-.boxes .box.box3{
-    background-color: var(--box3-color);
-}
-.dash-content .activity .activity-data{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-.activity .activity-data{
-    display: flex;
-}
-.activity-data .data{
-    display: flex;
-    flex-direction: column;
-    margin: 0 15px;
-}
-.activity-data .data-title{
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--text-color);
-}
-.activity-data .data .data-list{
-    font-size: 18px;
-    font-weight: 400;
-    margin-top: 20px;
-    white-space: nowrap;
-    color: var(--text-color);
-}
+
+
 
 @media (max-width: 1000px) {
     nav{

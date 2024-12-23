@@ -5,14 +5,15 @@ from .views import *
 urlpatterns = [
 
     # Admin Actions
-    path('', views_static.landing_page, name='admin_login'),
-    path('admin_login/', views_static.landing_page, name='admin_login'),
+    path('', views_auth.LandingPageView.as_view(), name='landing_page'),
+    path('admin_login/', views_auth.LoginView.as_view(), name='admin_login'),
     path('success/', views_static.success_page, name='admin_login'),
+    path('system_admin_dashboard/', views_auth.SystemAdminDashboardView.as_view(), name='system_admin_dashboard'),
+
 
     # JWT Authentication URLs
     path('register/', views_auth.RegisterView.as_view(), name='register'),
     path('register-util/<int:pk>/', views_auth.RegisterViewRUD.as_view(), name='register-util'),
-    path('login/', views_auth.LoginView.as_view(), name='login'),
     path('users/', views_auth.UserView.as_view(), name='users'),
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
 
@@ -65,6 +66,6 @@ urlpatterns = [
 
     # # Custom JWT Authentication/Authorization (if necessary)
     # path('jwt_authenticate/', jwt_authenticate, name='jwt_authenticate'),
-    # path('unauthorized_access/', unauthorized_access, name='unauthorized_access'),
+    path('unauthorized_access/', views_static.unauthorized_access, name='unauthorized_access'),
     # path('invalid_link/', invalid_link, name='invalid_link'),
 ]
