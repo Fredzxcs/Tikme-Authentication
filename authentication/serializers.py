@@ -30,6 +30,10 @@ class QuestionListSerializer(serializers.ModelSerializer):
         model = QuestionList
         fields = ['id', 'questions_FK']
 
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'name']
 
 class UserSerializer(serializers.ModelSerializer):
     status_FK = serializers.PrimaryKeyRelatedField(queryset = Status.objects.all())
@@ -82,3 +86,5 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+    
+    

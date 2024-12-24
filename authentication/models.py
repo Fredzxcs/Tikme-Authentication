@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from .managers import UserManager
+from django.utils.timezone import now
+from datetime import timedelta
+from django.conf import settings
 
 class User(AbstractUser):
     name = models.CharField(max_length=255)
@@ -36,3 +39,22 @@ class Questions(models.Model):
 
 class Modules(models.Model):
     module_assign = models.CharField(max_length=255)
+
+class Group(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class Token(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Use the custom user model
+        on_delete=models.CASCADE,
+        related_name="tokens"
+    )
+    key = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Token for {self.user}"

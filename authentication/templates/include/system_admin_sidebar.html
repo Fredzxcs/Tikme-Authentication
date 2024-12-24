@@ -25,7 +25,7 @@
             <!-- Super Admin-Specific Links -->
             {% if user.is_superuser %}
                 <li>
-                    <a href="/admin/auth/group/">
+                    <a href="{% url 'groups' %}">
                         <i class="uil uil-users-alt"></i>
                         <span class="link-name">Groups</span>
                     </a>

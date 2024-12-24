@@ -18,7 +18,7 @@
         <h2>Login</h2>
         <!-- Display error message if exists -->
         {% if error %}
-          <p class="error">{{ error }}</p>
+          <p id="error-message" class="error">{{ error }}</p>
         {% endif %}
         <form id="login-form" method="post" action="{% url 'admin_login' %}">
           {% csrf_token %}
@@ -56,4 +56,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/admin_login.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}

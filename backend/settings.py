@@ -24,6 +24,8 @@ RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://reservations.exam
 LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
 FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboard/')
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB limit
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
 # JWT Settings
 SIMPLE_JWT = {
@@ -179,6 +181,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
+TECH_SUPPORT_EMAIL = "tikmedinesupp@gmail.com"
 
 # Mail Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -17,10 +17,13 @@ urlpatterns = [
     path('users/', views_auth.UserView.as_view(), name='users'),
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
 
+    path('groups/', views_super_admin.GroupListView.as_view(), name='groups'),
+    path('groups/<int:pk>/', views_super_admin.GroupDetailView.as_view(), name='groups-detail'),
+
     # Password Management
     path('forgot_password/', views_static.forgot_pass, name='forgot_password'),
     # path('reset_password/<uidb64>/<token>/', reset_password, name='reset_password'),
-    path('tech_support/', views_static.tech_support, name='tech_support'),
+    path('tech_support/', views_emails.TechSupportView.as_view(), name='tech_support'),
 
     path('get_users/', views_create.UserListCreateView.as_view(), name='get-users'),
     # Roles URLs

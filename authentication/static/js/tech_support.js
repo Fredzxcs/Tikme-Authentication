@@ -2,13 +2,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
     const emailField = document.querySelector('input[type="email"]');
     const fullNameField = document.querySelector('input[name="full_name"]');
+    const phoneField = document.querySelector('input[name="phone"]');
+    const descriptionField = document.querySelector('textarea[name="description"]');
     const fileInput = document.querySelector('input[type="file"]');
     const previewContainer = document.getElementById('preview-container');
-
-    // Modal elements
-    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
-    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
 
     // Function to validate email format
     function validateEmail(email) {
@@ -16,32 +13,63 @@ document.addEventListener('DOMContentLoaded', function () {
         return regex.test(email);
     }
 
-    // Form validation
-    function validateForm(event) {
+    // Form validation with SweetAlert
+    async function validateForm(event) {
         let isValid = true;
 
+        // Check Full Name
         if (fullNameField.value.trim() === '') {
-            alert('Full Name is required.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Full Name is required.',
+            });
             isValid = false;
         }
 
+        // Check Email
         if (!validateEmail(emailField.value)) {
-            alert('Please enter a valid email address.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please enter a valid email address.',
+            });
             isValid = false;
         }
 
-        if (!isValid) {
-            event.preventDefault(); // Prevent form submission if invalid
+        // Check Phone (optional)
+        if (phoneField.value.trim() !== '') {
+            const phoneRegex = /^[0-9]+$/;
+            if (!phoneRegex.test(phoneField.value)) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Phone number must contain only digits.',
+                });
+                isValid = false;
+            }
         }
+
+        // Check Description
+        if (descriptionField.value.trim() === '') {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please describe your issue in detail.',
+            });
+            isValid = false;
+        }
+
+        return isValid;
     }
 
     // File upload preview and limit functionality
     let fileList = []; // Array to store the files
 
-    function updatePreview() {
+    function updatePreview(files) {
         previewContainer.innerHTML = ''; // Clear the preview
 
-        fileList.forEach((file, index) => {
+        files.forEach((file, index) => {
             const reader = new FileReader();
 
             reader.onload = function (e) {
@@ -50,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const img = document.createElement('img');
                 img.src = e.target.result;
+                img.alt = `File Preview ${index + 1}`;
 
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-btn';
@@ -57,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 removeBtn.addEventListener('click', function () {
                     fileList.splice(index, 1); // Remove the file from the array
-                    updatePreview(); // Refresh the preview
+                    updatePreview(fileList); // Refresh the preview
                 });
 
                 wrapper.appendChild(img);
@@ -73,29 +102,76 @@ document.addEventListener('DOMContentLoaded', function () {
         const newFiles = Array.from(fileInput.files);
 
         if (fileList.length + newFiles.length > 3) {
-            alert('You can only upload up to 3 files.');
+            Swal.fire({
+                icon: 'error',
+                title: 'File Limit Exceeded',
+                text: 'You can only upload up to 3 files.',
+            });
+            fileInput.value = ''; // Reset the file input
             return;
         }
 
         fileList = [...fileList, ...newFiles]; // Append new files to the file list
-        updatePreview();
+        updatePreview(fileList);
 
         // Clear the input to allow adding the same file again if needed
         fileInput.value = '';
     });
 
-    // Handle form submission
-    form.addEventListener('submit', function (event) {
-        validateForm(event);
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault(); // Prevent default form submission behavior
 
-        if (!event.defaultPrevented) {
-            loadingModal.show();
+        const isValid = await validateForm(event);
 
-            // Simulate form submission
-            setTimeout(() => {
-                loadingModal.hide();
-                successModal.show();
-            }, 2000);
+        if (isValid) {
+            Swal.fire({
+                title: 'Submitting...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            const formData = new FormData(form);
+
+            // Append files manually to FormData
+            fileList.forEach((file) => {
+                formData.append('attachments[]', file);
+            });
+
+            for (let pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+            
+            try {
+                const response = await fetch('/tech_support/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: result.success || 'Your tech support request has been submitted!',
+                    });
+                } else {
+                    const error = await response.json();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Server Error',
+                        text: error.error || 'An error occurred while submitting your request.',
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Unable to submit your request. Please try again later.',
+                });
+                console.error('Fetch Error:', error);
+            }
         }
     });
 
