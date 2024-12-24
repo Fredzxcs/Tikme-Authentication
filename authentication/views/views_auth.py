@@ -1,5 +1,7 @@
 from rest_framework.response import Response
 from django.http import JsonResponse
+from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed
 from ..models import *
 from ..serializers import *
@@ -9,6 +11,12 @@ import requests
 from rest_framework import status, views
 from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import NotFound
+from django.shortcuts import render
+
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 class RegisterView(views.APIView):
@@ -54,14 +62,16 @@ class RegisterViewRUD(views.APIView):
 
 
 class LoginView(views.APIView):
+
+    def get(self, request):
+        return render(request, 'admin_login.html')
+
     def post(self, request):
         employee_number = request.data['employee_number']
         password = request.data['password']
-        redirection_url = 'http://127.0.0.1:8000/admin_login/'
 
         # Authenticate user
         user = User.objects.filter(employee_number=employee_number).first()
-
         if user is None:
             raise AuthenticationFailed('User not found!')
 
@@ -77,28 +87,31 @@ class LoginView(views.APIView):
             'nbf': current_time,
         }
 
-        token = jwt.encode(payload, 'secret', algorithm='HS256')
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-        # Determine redirection URL based on user modules
-        if user.modules_FK == 'Reservations':
-            redirection_url = 'http://127.0.0.1:8000/success/'
-        elif user.modules_FK == 'Logistics':
-            redirection_url = '/logistics-dashboard'
-        elif user.modules_FK == 'Finance':
-            redirection_url = 'http://127.0.0.1:8001/dashboard/'
-        elif user.modules_FK == 'None':
-            redirection_url = '/no-access'
+        # Determine redirection URL
+        if user.is_superuser:
+            redirection_url = '/system_admin_dashboard/'
+        elif user.modules_FK and user.modules_FK.module_assign == 'Reservations':
+            redirection_url = f"{settings.RESERVATIONS_URL}?token={token}"
+        elif user.modules_FK and user.modules_FK.module_assign == 'Logistics':
+            redirection_url = f"{settings.LOGISTICS_URL}?token={token}"
+        elif user.modules_FK and user.modules_FK.module_assign == 'Finance':
+            redirection_url = f"{settings.FINANCE_URL}?token={token}"
+        else:
+            redirection_url = '/unauthorized-access/'
+
+         # Log the redirection URL
+        logger.info(f"Redirecting user {user.employee_number} to {redirection_url}")
 
         # Prepare role information
-        user_data = None
-        if user.roles_FK:  # Check if a role is assigned
-            user_data = {
-                'id': user.roles_FK.id,
-                'user_name': user.name,
-                'user': user.employee_number,
-                'role_name': user.roles_FK.role_name,
-                'module': user.modules_FK.module_assign,
-            }
+        user_data = {
+            'id': user.roles_FK.id if user.roles_FK else None,
+            'user_name': user.name,
+            'user': user.employee_number,
+            'role_name': user.roles_FK.role_name if user.roles_FK else None,
+            'module': user.modules_FK.module_assign if user.modules_FK else None,
+        }
 
         # Response with token, role, and redirection URL
         response = Response()
@@ -110,7 +123,21 @@ class LoginView(views.APIView):
         }
         return response
 
+class LandingPageView(views.APIView):
+    def get(self, request):
+        return render(request, 'admin_login.html')
 
+class SystemAdminDashboardView(views.APIView):
+
+
+    def get(self, request):
+        logger.info(f"User: {request.user}, Authenticated: {request.user.is_authenticated}")
+        return render(request, 'system_admin_dashboard.html')
+
+    def post(self, request):
+        # Handle POST requests (if needed)
+        return Response({'message': 'POST request received!'})
+    
 class UserView(views.APIView):
     permission_classes = [AllowAny]
     def get(self, request):

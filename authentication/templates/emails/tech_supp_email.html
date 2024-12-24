@@ -1,0 +1,76 @@
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tech_support.css' %}">
+{% endblock %}
+
+{% block content %}
+<body style="background-color: #f4f4f4; margin: 0 !important; padding: 0 !important; font-family: Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <!-- LOGO -->
+        <tr>
+            <td bgcolor="#f4f4f4" align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td align="center" style="padding: 40px 10px;">
+                            <img src="{% static 'images/tikme-logo.png' %}" alt="Tikme Logo" style="width: 200px; border: 0;">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- HEADER -->
+        <tr>
+            <td bgcolor="#f4f4f4" align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 20px 30px; border-radius: 8px 8px 0 0; color: #333333; font-size: 24px; font-weight: bold;">
+                            New Tech Support Request
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- MAIN CONTENT -->
+        <tr>
+            <td bgcolor="#f4f4f4" align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td bgcolor="#ffffff" align="left" style="padding: 20px 30px; color: #333333; font-size: 16px; line-height: 24px;">
+                            <p>Hello Tech Support Team,</p>
+                            <p>You have received a new support request. Here are the details:</p>
+                            <ul style="margin: 15px 0; padding: 0 20px; list-style-type: disc;">
+                                <li><strong>Name:</strong> {{ user_full_name }}</li>
+                                <li><strong>Email:</strong> {{ user_email }}</li>
+                                <li><strong>Phone:</strong> {{ user_phone|default:"Not provided" }}</li>
+                            </ul>
+                            <p><strong>Description:</strong></p>
+                            <p>{{ description }}</p>
+                            
+                            <p><strong>Attachments:</strong></p>
+                            {% if attachments %}
+                                <ul>
+                                    {% for attachment in attachments %}
+                                        <li>{{ attachment.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>None</p>
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    <!-- FOOTER -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="left" style="padding: 20px 30px; font-size: 14px; color: #666666; border-radius: 0 0 8px 8px;">
+                            <p>Please address this issue as soon as possible.</p>
+                            <p>Thank you,</p>
+                            <p><strong>Tikme Support System</strong></p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+{% endblock %}

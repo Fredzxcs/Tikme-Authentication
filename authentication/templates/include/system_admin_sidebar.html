@@ -1,0 +1,118 @@
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'css/system_admin_sidebar.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<nav>
+    <!-- Logo -->
+    <div class="logo-name">
+        <span class="logo_name">Tikme Dine</span>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="menu-items">
+        <ul class="nav-links">
+            <!-- Dashboard -->
+            <li>
+                <a href="{% url 'system_admin_dashboard' %}">
+                    <i class="uil uil-estate"></i>
+                    <span class="link-name">Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Super Admin-Specific Links -->
+            {% if user.is_superuser %}
+                <li>
+                    <a href="{% url 'groups' %}">
+                        <i class="uil uil-users-alt"></i>
+                        <span class="link-name">Groups</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="uil uil-key-skeleton"></i>
+                        <span class="link-name">Permissions</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="uil uil-shield-check"></i>
+                        <span class="link-name">Token Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="uil uil-setting"></i>
+                        <span class="link-name">Advanced Settings</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            <!-- System Admin-Specific Links -->
+            {% if not user.is_superuser %}
+                <li>
+                    <a href="#">
+                        <i class="uil uil-users-alt"></i>
+                        <span class="link-name">Manage Users</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <!-- Logout and Dark Mode -->
+        <ul class="logout-mode">
+            <!-- Logout -->
+            <li>
+                <a href="{% url 'admin_login' %}">
+                    <i class="uil uil-signout"></i>
+                    <span class="link-name">Logout</span>
+                </a>
+            </li>
+
+            <!-- Dark Mode -->
+            <li class="mode">
+                <a href="#">
+                    <i class="uil uil-moon"></i>
+                    <span class="link-name">Dark Mode</span>
+                </a>
+                <div class="mode-toggle">
+                    <span class="switch"></span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<section class="dashboard">
+    <!-- Top Section -->
+    <div class="top">
+        <i class="uil uil-bars sidebar-toggle"></i>
+
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <a href="{% url 'system_admin_dashboard' %}" class="breadcrumb-link">Dashboard</a>
+            <span class="breadcrumb-divider">/</span>
+            <a href="#" class="breadcrumb-link current">Current Page</a>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="profile-section">
+            <img src="{% static 'images/profile.jpg' %}" alt="Profile" class="profile-img">
+            <div class="profile-dropdown">
+                <span class="profile-name">{{ user.username }}</span>
+                <ul>
+                    <li><a href="#">View Profile</a></li>
+                    <li><a href="#">Account Settings</a></li>
+                    <li><a href="#">Activity Logs</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/system_admin_sidebar.js' %}"></script>
+{% endblock %}

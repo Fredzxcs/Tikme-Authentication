@@ -4,9 +4,8 @@ from ..serializers import UserSerializer
 import jwt, datetime
 import requests
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
-def landing_page(request):
-    return render(request, 'admin_login.html')
 
 def forgot_pass(request):
     return render(request, 'forgot_password.html')
@@ -16,3 +15,10 @@ def tech_support(request):
 
 def success_page(request):
     return render(request, 'admin_login.html')
+
+def unauthorized_access(request):
+    return render(request, 'unauthorized_access.html')
+
+@login_required
+def system_admin_page(request):
+    return render(request, 'system_admin_dashboard.html')

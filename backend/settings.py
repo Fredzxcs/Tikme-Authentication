@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+from decouple import config
 
 load_dotenv()
 
@@ -17,6 +18,14 @@ DEBUG = True
 # Allow local and specific IPs
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
+LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
+
+RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://reservations.example.com/dashboard/')
+LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
+FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboard/')
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB limit
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
 # JWT Settings
 SIMPLE_JWT = {
@@ -48,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 ]
 
 
@@ -60,15 +70,24 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-       'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # Ensure public access by default
+    ],
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "https://reservations.myapp.com",
+    "https://logistics.myapp.com",
+    "https://finance.myapp.com",
+]
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -162,6 +181,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
+TECH_SUPPORT_EMAIL = "tikmedinesupp@gmail.com"
 
 # Mail Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

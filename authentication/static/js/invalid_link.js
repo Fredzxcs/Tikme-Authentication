@@ -26,7 +26,7 @@ function onPageLoad() {
         // Optionally redirect to another page or perform other actions
     } else {
         alert("Your session has expired or you are not logged in. Please log in again.");
-        window.location.href = '/admin_login'; // Redirect to the login page
+        window.location.href = '/admin_login/'; // Redirect to the login page
     }
 }
 

@@ -34,7 +34,7 @@ function toggleVisibility(fieldId) {
 
                 setTimeout(() => {
                     // Redirect to the admin login page after confirmation
-                    window.location.href = '/api-auth/admin_login';
+                    window.location.href = '/admin_login/';
                 }, 2000); // Wait for 2 seconds before redirect
             } else {
                 return response.json().then(data => {
