@@ -24,8 +24,8 @@ RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://reservations.exam
 LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
 FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboard/')
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB limit
-FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
+ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
+MAX_FILE_SIZE_MB = 5
 
 # JWT Settings
 SIMPLE_JWT = {

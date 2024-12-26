@@ -64,28 +64,36 @@ def send_onboarding_email(request, employee):
 
 
 def send_tech_support_email(user_full_name, user_email, phone, description, attachments):
-    # Render email content
-    html_content = render_to_string("emails/tech_supp_email.html", {
-        "user_full_name": user_full_name,
-        "user_email": user_email,
-        "user_phone": phone,
-        "description": description,
-        "attachments": attachments,  # Pass attachments for display
-    })
+    try:
+        # Render email content
+        html_content = render_to_string("emails/tech_supp_email.html", {
+            "user_full_name": user_full_name,
+            "user_email": user_email,
+            "user_phone": phone,
+            "description": description,
+            "attachments": attachments,  # Pass attachments for display
+        })
 
-    email = EmailMultiAlternatives(
-        subject=f"Tech Support Request from {user_full_name or 'Anonymous'}",
-        body=f"Tech support request from {user_full_name or 'Anonymous'}.",
-        from_email=settings.EMAIL_HOST_USER,
-        to=[settings.TECH_SUPPORT_EMAIL],
-    )
-    
-    # Attach files to the email
-    for attachment in attachments:
-        email.attach(attachment.name, attachment.read(), attachment.content_type)
 
-    email.attach_alternative(html_content, "text/html")
-    email.send()
+        email = EmailMultiAlternatives(
+            subject=f"Tech Support Request from {user_full_name or 'Anonymous'}",
+            body=f"Tech support request from {user_full_name or 'Anonymous'}.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=[settings.TECH_SUPPORT_EMAIL],
+        )
+        
+        # Attach files to the email
+        for attachment in attachments:
+            attachment.seek(0)  # Ensure the file cursor is at the start
+            email.attach(attachment.name, attachment.read(), attachment.content_type)
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+    except Exception as e:
+        # Log the exception (or handle as needed)
+        print(f"Failed to send email: {e}")
+        raise e  # Optionally, re-raise the exception if needed
+
 
 def send_reset_password_email(request, employee, is_reset_notification=False):
     """
