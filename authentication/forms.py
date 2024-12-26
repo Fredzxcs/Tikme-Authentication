@@ -1,10 +1,13 @@
 from django import forms
 from .models import *
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import RegexValidator
+from django.conf import settings
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
-    
+
+
 class TechSupportForm(forms.Form):
     full_name = forms.CharField(
         max_length=255,
@@ -21,7 +24,6 @@ class TechSupportForm(forms.Form):
         }),
         required=False,
     )
-    from django.core.validators import RegexValidator
     phone = forms.CharField(
         max_length=15,
         widget=forms.TextInput(attrs={
@@ -29,7 +31,9 @@ class TechSupportForm(forms.Form):
             'placeholder': 'Enter your phone number',
         }),
         required=False,
-        validators=[RegexValidator(r'^\d{10,15}$', message='Enter a valid phone number.')],
+        validators=[
+            RegexValidator(r'^\d{10,15}$', message='Enter a valid phone number.')
+        ],
     )
     description = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -40,20 +44,44 @@ class TechSupportForm(forms.Form):
         required=True,  # This field is required
     )
     attachments = forms.FileField(
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        widget=MultipleFileInput(attrs={'multiple': True}),
         required=False,
     )
 
     def clean_attachments(self):
         files = self.files.getlist('attachments')
+        allowed_types = getattr(settings, 'ALLOWED_FILE_TYPES', ['image/jpeg', 'image/png', 'application/pdf'])
+        max_file_size = getattr(settings, 'MAX_FILE_SIZE_MB', 5) * 1024 * 1024  # Convert to bytes
+
+        # Validate the number of files
         if len(files) > 3:
             raise forms.ValidationError("You can upload a maximum of 3 files.")
+
+        # Define user-friendly names for file types
+        readable_types = {
+            'image/jpeg': 'JPEG',
+            'image/png': 'PNG',
+            'application/pdf': 'PDF',
+        }
+        allowed_type_names = [readable_types.get(file_type, file_type) for file_type in allowed_types]
+
         for file in files:
-            if file.size > 5 * 1024 * 1024:  # 5MB limit
-                raise forms.ValidationError(f"File {file.name} exceeds the 5MB size limit.")
+            # Validate empty files
+            if file.size == 0:
+                raise forms.ValidationError(f"File {file.name} is empty. Please upload a valid file.")
+
+            # Validate file size
+            if file.size > max_file_size:
+                raise forms.ValidationError(f"File {file.name} exceeds the {settings.MAX_FILE_SIZE_MB}MB size limit.")
+
+            # Validate file type
+            if file.content_type not in allowed_types:
+                raise forms.ValidationError(
+                    f"{file.name} is not an allowed file type. Allowed types are: {', '.join(allowed_type_names)}."
+                )
+
         return files
-
-
+    
 class SetupSecurityQuestionsForm(forms.Form):
     SECURITY_QUESTIONS = [
         ('What was the name of your first pet?', 'What was the name of your first pet?'),

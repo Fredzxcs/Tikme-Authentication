@@ -18,20 +18,27 @@ class TechSupportView(views.APIView):
             email = form.cleaned_data.get("email", "no-reply@example.com")
             phone = form.cleaned_data.get("phone", "Not provided")
             description = form.cleaned_data.get("description")
-            attachments = request.FILES.getlist("attachments")
 
-            print(request.FILES.getlist('attachments'))
+            # Fix: Handle files manually for attachments[]
+            attachments = request.FILES.getlist("attachments[]")
 
-            # Send email with attachments
-            send_tech_support_email(
-                user_full_name=full_name,
-                user_email=email,
-                phone=phone,
-                description=description,
-                attachments=attachments,
-            )
+            print("FILES LIST:", attachments)  # Debugging
 
-            return JsonResponse(
-                {"success": "Your tech support request has been sent successfully!"}
-            )
+            try:
+                # Send email with attachments
+                send_tech_support_email(
+                    user_full_name=full_name,
+                    user_email=email,
+                    phone=phone,
+                    description=description,
+                    attachments=attachments,
+                )
+                return JsonResponse(
+                    {"success": "Your tech support request has been sent successfully!"}
+                )
+            except Exception as e:
+                return JsonResponse(
+                    {"error": f"Failed to send tech support email: {str(e)}"},
+                    status=500,
+                )
         return JsonResponse({"error": form.errors}, status=400)

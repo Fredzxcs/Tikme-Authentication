@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.querySelector('input[type="file"]');
     const previewContainer = document.getElementById('preview-container');
 
+    // File storage
+    let fileList = [];
+
     // Function to validate email format
     function validateEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,10 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Form validation with SweetAlert
-    async function validateForm(event) {
+    async function validateForm() {
         let isValid = true;
 
-        // Check Full Name
         if (fullNameField.value.trim() === '') {
             await Swal.fire({
                 icon: 'error',
@@ -27,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
             isValid = false;
         }
 
-        // Check Email
         if (!validateEmail(emailField.value)) {
             await Swal.fire({
                 icon: 'error',
@@ -37,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
             isValid = false;
         }
 
-        // Check Phone (optional)
         if (phoneField.value.trim() !== '') {
             const phoneRegex = /^[0-9]+$/;
             if (!phoneRegex.test(phoneField.value)) {
@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Check Description
         if (descriptionField.value.trim() === '') {
             await Swal.fire({
                 icon: 'error',
@@ -63,11 +62,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return isValid;
     }
 
-    // File upload preview and limit functionality
-    let fileList = []; // Array to store the files
-
+    // Update file preview
     function updatePreview(files) {
-        previewContainer.innerHTML = ''; // Clear the preview
+        previewContainer.innerHTML = '';
 
         files.forEach((file, index) => {
             const reader = new FileReader();
@@ -85,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeBtn.innerText = 'X';
 
                 removeBtn.addEventListener('click', function () {
-                    fileList.splice(index, 1); // Remove the file from the array
-                    updatePreview(fileList); // Refresh the preview
+                    fileList.splice(index, 1);
+                    updatePreview(fileList);
                 });
 
                 wrapper.appendChild(img);
@@ -98,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // File input change event
     fileInput.addEventListener('change', function () {
         const newFiles = Array.from(fileInput.files);
 
@@ -107,21 +105,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 title: 'File Limit Exceeded',
                 text: 'You can only upload up to 3 files.',
             });
-            fileInput.value = ''; // Reset the file input
+            fileInput.value = '';
             return;
         }
 
-        fileList = [...fileList, ...newFiles]; // Append new files to the file list
+        fileList = [...fileList, ...newFiles];
         updatePreview(fileList);
 
-        // Clear the input to allow adding the same file again if needed
         fileInput.value = '';
     });
 
+    // Form submit event
     form.addEventListener('submit', async function (event) {
-        event.preventDefault(); // Prevent default form submission behavior
+        event.preventDefault();
 
-        const isValid = await validateForm(event);
+        const isValid = await validateForm();
 
         if (isValid) {
             Swal.fire({
@@ -134,15 +132,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const formData = new FormData(form);
 
-            // Append files manually to FormData
             fileList.forEach((file) => {
                 formData.append('attachments[]', file);
             });
 
+            // Debug: Log all form data
             for (let pair of formData.entries()) {
                 console.log(pair[0], pair[1]);
             }
-            
+
             try {
                 const response = await fetch('/tech_support/', {
                     method: 'POST',
@@ -156,6 +154,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         title: 'Success',
                         text: result.success || 'Your tech support request has been submitted!',
                     });
+                    form.reset();
+                    fileList = [];
+                    updatePreview(fileList);
                 } else {
                     const error = await response.json();
                     Swal.fire({
@@ -178,6 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Back button functionality
     const backButton = document.getElementById('adminLoginButton');
     backButton.addEventListener('click', function () {
-        window.location.href = '/admin_login/'; // Replace with your desired URL
+        window.location.href = '/admin_login/';
     });
 });

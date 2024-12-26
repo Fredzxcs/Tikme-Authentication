@@ -7,6 +7,10 @@
     font-family: 'Poppins', sans-serif;
 }
 
+.bootstrap-container {
+    all: unset; /* Resets all inherited styles */
+}
+
 :root{
     /* ===== Colors ===== */
     --primary-color: #8A2BE2;   
@@ -62,7 +66,6 @@ body.dark .activity-data::-webkit-scrollbar-thumb:hover{
 .dropdown .submenu {
     display: none; /* Initially hidden */
     list-style: none;
-    padding-left: 60px;
     margin: 0;
     justify-content: center;
 }
@@ -94,6 +97,11 @@ body.dark .activity-data::-webkit-scrollbar-thumb:hover{
 
 .dropdown.active .dropdown-arrow {
     transform: rotate(90deg); /* Rotate the arrow when active */
+}
+
+.dropdown-toggle::after {
+    display: none; /* Hides the caret */
+    content: none; /* Ensures no additional content is rendered */
 }
 
 
@@ -137,7 +145,8 @@ nav::-webkit-scrollbar-thumb:hover {
 }
 
 nav.close{
-    width: 60px;
+    width: 90px;
+    display: none;
 }
 nav .logo-name{
     display: flex;
@@ -494,8 +503,8 @@ nav.close ~ .dashboard{
 }
 
 nav.close ~ .dashboard .top{
-    left: 60px;
-    width: calc(100% - 60px);
+    left: 0px;
+    width: calc(100% - 0px);
 }
 .dashboard .top .sidebar-toggle{
     font-size: 26px;
