@@ -9,18 +9,12 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-yda!aa3&5g&fi(7q9-n$@g=n^lu^@p-7j)9e1@=vy2a9xav9^+'
+# Security
+SECRET_KEY = config('SECRET_KEY', default='unsafe-secret-key')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    '193.203.161.247',
-    'auth.193.203.161.247.nip.io',  # Add this subdomain
-]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
@@ -124,12 +118,8 @@ DATABASES = {
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_USER_PASSWORD'),
         'HOST': os.environ.get('DB_HOST'),
+        'PORT': config('DB_PORT', default='5432'),
     }
-    
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
 }
 
 
@@ -188,12 +178,12 @@ CORS_ALLOW_CREDENTIALS = True
 
 TECH_SUPPORT_EMAIL = "tikmedinesupp@gmail.com"
 
-# Mail Configuration
+# Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 
