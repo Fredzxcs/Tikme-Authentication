@@ -15,8 +15,12 @@ SECRET_KEY = 'django-insecure-yda!aa3&5g&fi(7q9-n$@g=n^lu^@p-7j)9e1@=vy2a9xav9^+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Allow local and specific IPs
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '193.203.161.247',
+    'auth.193.203.161.247.nip.io',  # Add this subdomain
+]
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
