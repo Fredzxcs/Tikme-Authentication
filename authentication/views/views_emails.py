@@ -1,4 +1,5 @@
-from ..emails import send_tech_support_email
+from ..emails import send_tech_support_email, send_onboarding_email
+from django.urls import reverse
 from rest_framework import views
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -42,3 +43,10 @@ class TechSupportView(views.APIView):
                     status=500,
                 )
         return JsonResponse({"error": form.errors}, status=400)
+
+class OnboardingEmailView(views.APIView):
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        verify_url = f"{request.scheme}://{request.get_host()}{reverse('employee-detail', args=[user.pk])}"
+        send_onboarding_email(user, verify_url)
+        return Response({'message': 'Onboarding email sent successfully'}, status=status.HTTP_200_OK)

@@ -19,6 +19,3 @@ def success_page(request):
 def unauthorized_access(request):
     return render(request, 'unauthorized_access.html')
 
-@login_required
-def system_admin_page(request):
-    return render(request, 'system_admin_dashboard.html')

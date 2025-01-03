@@ -22,42 +22,40 @@
                 </a>
             </li>
 
-            <!-- Super Admin-Specific Links -->
-            {% if user.is_superuser %}
-                <li>
-                    <a href="{% url 'groups' %}">
-                        <i class="uil uil-users-alt"></i>
-                        <span class="link-name">Groups</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="uil uil-key-skeleton"></i>
-                        <span class="link-name">Permissions</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="uil uil-shield-check"></i>
-                        <span class="link-name">Token Management</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="uil uil-setting"></i>
-                        <span class="link-name">Advanced Settings</span>
-                    </a>
-                </li>
-            {% endif %}
+            <!-- Manage Users -->
+            <li>
+                <a href="{% url 'manage_users' %}">
+                    <i class="uil uil-users-alt"></i>
+                    <span class="link-name">
+                        {% if is_super_admin %}
+                            Manage Users 
+                        {% elif is_system_admin %}
+                            Manage Users 
+                        {% endif %}
+                    </span>
+                </a>
+            </li>
 
-            <!-- System Admin-Specific Links -->
-            {% if not user.is_superuser %}
-                <li>
-                    <a href="#">
-                        <i class="uil uil-users-alt"></i>
-                        <span class="link-name">Manage Users</span>
-                    </a>
-                </li>
+            {% if is_super_admin %}
+            <!-- Super Admin-Specific Links -->
+            <li>
+                <a href="#">
+                    <i class="uil uil-users-alt"></i>
+                    <span class="link-name">Groups</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="uil uil-key-skeleton"></i>
+                    <span class="link-name">Permissions</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="uil uil-setting"></i>
+                    <span class="link-name">Advanced Settings</span>
+                </a>
+            </li>
             {% endif %}
         </ul>
 
@@ -101,7 +99,7 @@
         <div class="profile-section">
             <img src="{% static 'images/profile.jpg' %}" alt="Profile" class="profile-img">
             <div class="profile-dropdown">
-                <span class="profile-name">{{ user.username }}</span>
+                <span class="profile-name">{{ user.name }}</span>
                 <ul>
                     <li><a href="#">View Profile</a></li>
                     <li><a href="#">Account Settings</a></li>

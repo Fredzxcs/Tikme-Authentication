@@ -23,8 +23,29 @@ document.addEventListener('DOMContentLoaded', function () {
         loginForm.addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const employeeNumber = document.getElementById('employee_number').value;
-            const password = document.getElementById('password').value;
+            const employeeNumber = document.getElementById('employee_number').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // Validate inputs before making a request
+            if (!employeeNumber || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Information',
+                    text: 'Please fill in both Employee Number and Password fields.',
+                });
+                return;
+            }
+
+            // Display loading animation
+            Swal.fire({
+                title: 'Logging in...',
+                text: 'Please wait while we process your request.',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
 
             fetch('/admin_login/', {
                 method: 'POST',
@@ -47,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .then(data => {
                     if (data.jwt && data.redirect_to) {
-                        // Display SweetAlert success notification
                         Swal.fire({
                             icon: 'success',
                             title: 'Login Successful',
@@ -55,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             timer: 2000,
                             showConfirmButton: false,
                         }).then(() => {
-                            document.cookie = `jwt=${data.jwt}; httponly`;
+                            // Redirect to the dashboard
                             window.location.href = data.redirect_to;
                         });
                     } else {
@@ -65,11 +85,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(error => {
                     console.error('Error:', error);
 
-                    // Display SweetAlert error notification
+                    // Handle specific error cases
+                    let errorMessage = 'An unexpected error occurred.';
+                    if (error.message.includes('Invalid credentials')) {
+                        errorMessage = 'Incorrect Employee Number or Password.';
+                    } else if (error.message.includes('Session expired')) {
+                        errorMessage = 'Your session has expired. Please log in again.';
+                    }
+
                     Swal.fire({
                         icon: 'error',
                         title: 'Login Failed',
-                        text: error.message || 'An unexpected error occurred.',
+                        text: errorMessage,
                     });
                 });
         });

@@ -27,6 +27,32 @@ FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboa
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # Set to 'INFO' or 'DEBUG' based on your requirement
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # Adjust to 'DEBUG' for more verbose output
+            'propagate': True,
+        },
+        'authentication': {  # Custom logger for your app
+            'handlers': ['console'],
+            'level': 'INFO',  # Use 'DEBUG' for detailed logs
+            'propagate': False,
+        },
+    },
+}
+
 # JWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

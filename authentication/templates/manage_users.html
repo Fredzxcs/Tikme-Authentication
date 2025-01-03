@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/manage_users.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+{% include 'include/system_admin_sidebar.html' %}
+
+<div class="main-content">
+  <div class="container">
+    <h1 class="dashboard-title">Employee Management</h1>
+
+    <!-- Add Employee Button -->
+    <div class="add-employee mb-3">
+      <button class="btn btn-primary" id="add-employee-btn">
+        <i class="fas fa-user-plus"></i> Add Employee
+      </button>
+    </div>
+
+    <!-- Employee Table -->
+    <div class="employee-table">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Module</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody id="employee-tbody">
+          {% for employee in employees %}
+          <tr>
+            <td>{{ employee.id }}</td>
+            <td>{{ employee.username }}</td>
+            <td>{{ employee.first_name }}</td>
+            <td>{{ employee.last_name }}</td>
+            <td>{{ employee.email }}</td>
+            <td>{{ employee.module.module_name if employee.module else "N/A" }}</td>
+            <td>{{ employee.role.role_name if employee.role else "N/A" }}</td>
+            <td>{{ employee.account_status }}</td>
+            <td>
+              <!-- Actions Dropdown -->
+              <div class="dropdown">
+                <button
+                  class="btn btn-secondary dropdown-toggle"
+                  type="button"
+                  id="accountStatusDropdown"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  {% if employee.account_status == 'pending' %}disabled{% endif %}
+                >
+                  <i class="fas fa-cogs"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="accountStatusDropdown">
+                  <a class="dropdown-item" href="{% url 'change_status' employee.id 'active' %}">
+                    <i class="fas fa-check-circle"></i> Activate
+                  </a>
+                  <a class="dropdown-item" href="{% url 'change_status' employee.id 'inactive' %}">
+                    <i class="fas fa-times-circle"></i> Deactivate
+                  </a>
+                  <a class="dropdown-item" href="{% url 'change_status' employee.id 'suspended' %}">
+                    <i class="fas fa-ban"></i> Suspend
+                  </a>
+                </div>
+              </div>
+            </td>
+            <td>
+              <!-- Email Actions Dropdown -->
+              <div class="dropdown">
+                <button
+                  class="btn btn-secondary dropdown-toggle"
+                  type="button"
+                  id="emailActionsDropdown"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fas fa-envelope"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="emailActionsDropdown">
+                  {% if employee.account_status == 'pending' %}
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    data-toggle="modal"
+                    data-target="#confirmationModal"
+                    data-email="{{ employee.email }}"
+                    data-action="Onboarding"
+                    data-id="{{ employee.id }}"
+                  >
+                    <i class="fas fa-user-plus"></i> Onboarding
+                  </a>
+                  <a
+                    class="dropdown-item btn-gray text-muted"
+                    href="#"
+                    onclick="return false;"
+                    style="pointer-events: none; cursor: default;"
+                  >
+                    <i class="fas fa-unlock-alt"></i> Unlock
+                  </a>
+                  {% elif employee.account_status == 'active' %}
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    data-toggle="modal"
+                    data-target="#confirmationModal"
+                    data-email="{{ employee.email }}"
+                    data-action="Unlock Account"
+                    data-id="{{ employee.id }}"
+                  >
+                    <i class="fas fa-unlock-alt"></i> Unlock
+                  </a>
+                  {% else %}
+                  <a
+                    class="dropdown-item btn-gray text-muted"
+                    href="#"
+                    onclick="return false;"
+                    style="pointer-events: none; cursor: default;"
+                  >
+                    <i class="fas fa-unlock-alt"></i> Unlock
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Employee Modal -->
+<div id="add-employee-modal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2>Add Employee</h2>
+    <form id="add-employee-form">
+      <div class="form-group">
+        <label for="employee-id">Employee ID</label>
+        <input type="text" id="employee-id" name="employee-id" required>
+      </div>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="first-name">First Name</label>
+        <input type="text" id="first-name" name="first-name" required>
+      </div>
+      <div class="form-group">
+        <label for="last-name">Last Name</label>
+        <input type="text" id="last-name" name="last-name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label for="module">Module</label>
+        <div id="module-buttons">
+          <button type="button" class="module-btn" data-module="Reservations">
+            Reservations
+          </button>
+          <button type="button" class="module-btn" data-module="Logistics">
+            Logistics
+          </button>
+          <button type="button" class="module-btn" data-module="Finance">
+            Finance
+          </button>
+        </div>
+        <input type="hidden" id="module" name="module">
+      </div>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" name="role" required>
+          <option value="Super Admin">Super Admin</option>
+          <option value="System Admin">System Admin</option>
+          <option value="Manager">Manager</option>
+          <option value="Employee">Employee</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="job-title">Job Title</label>
+        <select id="job-title" name="job-title" required>
+          <option value="Chef">Chef</option>
+          <option value="Waiter">Waiter</option>
+          <option value="Cashier">Cashier</option>
+          <option value="Manager">Manager</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="account-status">Account Status</label>
+        <select id="account-status" name="account-status" required>
+          <option value="Pending">Pending</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Suspended">Suspended</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success">Save</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/manage_users.js' %}"></script>
+{% endblock %}
