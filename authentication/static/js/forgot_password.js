@@ -1,59 +1,75 @@
-// Access JWT token from storage or context
-const jwtToken = sessionStorage.getItem('jwtToken') || localStorage.getItem('jwtToken') || "{{ token }}";
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("forgot-password-form");
+    const emailField = document.getElementById("email");
 
-// Toggle visibility for password fields
-function toggleVisibility(fieldId) {
-    const field = document.getElementById(fieldId);
-    field.type = field.type === "password" ? "text" : "password";
-}
-
-    // Function to handle form submission
-    function handleFormSubmit(event) {
-        event.preventDefault(); // Prevent default form submission
-
-        const token = getToken();
-        const email = document.getElementById('email').value;
-
-        // Show loading modal
-        document.getElementById('loadingModal').style.display = 'block';
-
-        // Make a request to the server to send the password reset email
-        fetch('/forgot_password/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Include the JWT in the headers
-            },
-            body: JSON.stringify({ email: email })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Show confirmation modal and hide loading modal
-                document.getElementById('loadingModal').style.display = 'none';
-                document.getElementById('confirmationModal').style.display = 'block';
-
-                setTimeout(() => {
-                    // Redirect to the admin login page after confirmation
-                    window.location.href = '/admin_login/';
-                }, 2000); // Wait for 2 seconds before redirect
-            } else {
-                return response.json().then(data => {
-                    document.getElementById('loadingModal').style.display = 'none';
-                    alert(data.error || "An error occurred. Please try again.");
-                });
-            }
-        })
-        .catch(error => {
-            document.getElementById('loadingModal').style.display = 'none';
-            console.error('Error:', error);
-            alert("An unexpected error occurred. Please try again.");
-        });
+    // Function to validate email format
+    function validateEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
     }
 
-    // Attach the event listener to the form
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', handleFormSubmit);
+    // Form submission event listener
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const email = emailField.value.trim();
+
+        // Validate email field
+        if (!validateEmail(email)) {
+            await Swal.fire({
+                icon: "error",
+                title: "Validation Error",
+                text: "Please enter a valid email address.",
+            });
+            return;
+        }
+
+        // Show submitting alert
+        Swal.fire({
+            title: "Submitting...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+        });
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append("email", email);
+
+        try {
+            const response = await fetch("/forgot_password/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+                },
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Display the success message
+                await Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: result.success || "A reset link has been sent to your email.",
+                });
+                form.reset();
+            } else {
+                // Display error message from server
+                await Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: result.error || "Failed to send the reset link. Please try again.",
+                });
+            }
+        } catch (error) {
+            // Handle network or unexpected errors
+            await Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "An unexpected error occurred. Please try again later.",
+            });
+            console.error("Error submitting form:", error);
         }
     });
+});

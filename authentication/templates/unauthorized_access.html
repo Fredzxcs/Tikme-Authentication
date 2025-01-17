@@ -11,17 +11,12 @@
     document.addEventListener("DOMContentLoaded", function () {
         Swal.fire({
             icon: 'error',
-            title: 'Unauthorized Access',
-            text: 'You do not have permission to view this page. Please contact your administrator if you believe this is a mistake.',
-            confirmButtonText: 'Go back to Admin Login',
+            title: 'Access Denied',
+            text: 'You do not have permission to access this page.',
+            confirmButtonText: 'Go Back',
             confirmButtonColor: '#6c5ce7',
-            backdrop: true, // Display backdrop to block interaction
-            allowOutsideClick: false, // Disable outside click
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Redirect to admin login
-                window.location.href = "{% url 'admin_login' %}";
-            }
+        }).then(() => {
+            window.location.href = "{% url 'admin_login' %}";
         });
     });
 </script>

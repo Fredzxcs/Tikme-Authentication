@@ -5,49 +5,59 @@ from django.conf import settings
 
 
 class User(AbstractUser):
-    name = models.CharField(max_length=255)
+    # Removed 'name' field and replaced it with 'first_name' and 'last_name' only
     email = models.EmailField(unique=True)
     employee_number = models.CharField(max_length=255, unique=True)
 
     # Relationships
-    status = models.ForeignKey('Status', on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
-    question_list = models.ForeignKey('QuestionList', on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
-    role = models.ForeignKey('Role', on_delete=models.CASCADE, null=True, related_name="users")  # Critical relationship
-    module = models.ForeignKey('Module', on_delete=models.CASCADE, null=True, related_name="users")  # Critical relationship
-    job_title = models.ForeignKey('JobTitle', on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
+    status = models.ForeignKey(
+        'Status', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
+    )
+    question_list = models.ForeignKey(
+        'QuestionList', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
+    )
+    role = models.ForeignKey(
+        'Role', on_delete=models.CASCADE, null=True, related_name="users"
+    )  # Critical relationship for role-based access
+    module = models.ForeignKey(
+        'Module', on_delete=models.CASCADE, null=True, blank=True, related_name="users"
+    )
+    job_title = models.ForeignKey(
+        'JobTitle', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
+    )
 
     # Remove username and use employee_number for authentication
     username = None
     USERNAME_FIELD = 'employee_number'
-    REQUIRED_FIELDS = ['email', 'name']
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     objects = UserManager()
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.employee_number} - {self.name}"
+        return f"{self.employee_number} - {self.first_name} {self.last_name}"
 
 
 class Role(models.Model):
-    ROLE_CHOICES = [
-        ('Super Admin', 'Super Admin'),
-        ('System Admin', 'System Admin'),
-        ('Manager', 'Manager'),
-        ('Employee', 'Employee'),
-    ]
-    role_name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
+    role_name = models.CharField(max_length=50, unique=True)
+    permissions = models.ManyToManyField(
+        'Permission', related_name="roles", blank=True
+    )
 
     def __str__(self):
         return self.role_name
 
 
 class Status(models.Model):
-    STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Inactive', 'Inactive'),
-        ('Pending', 'Pending'),
-        ('Suspended', 'Suspended'),
-    ]
-    status_name = models.CharField(max_length=50, choices=STATUS_CHOICES, unique=True)
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+    )
+    status_name = models.CharField(max_length=50, unique=True, choices=STATUS_CHOICES)
 
     def __str__(self):
         return self.status_name
@@ -68,19 +78,15 @@ class Question(models.Model):
 
 
 class Module(models.Model):
-    MODULE_CHOICES = [
-        ('Reservations', 'Reservations'),
-        ('Logistics', 'Logistics'),
-        ('Finance', 'Finance'),
-    ]
-    module_name = models.CharField(max_length=50, choices=MODULE_CHOICES, unique=True)
+    module_name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.module_name
 
 
-class Group(models.Model):
+class Permission(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name

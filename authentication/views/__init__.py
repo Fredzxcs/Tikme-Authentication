@@ -1,13 +1,23 @@
-from .views_emails import *
 from .views_auth import *
-from .views_static import *
-from .views_create import *
-from .views_super_admin import *
+from .views_dashboard import *
+from .views_emails import *
+from .views_manage_users import *
+from .views_job_titles import *
+from .views_modules import *
+from .views_permissions import *
+from .views_roles import *
+
+
 
 __all__ = [
-    "views_emails",
     "views_auth",
-    "views_static",
-    "views_create",
-    "views_super_admin",
+    "views_dashboard",
+    "views_emails",
+    "views_manage_users",
+    "views_job_titles",
+    "views_modules",
+    "views_permissions",
+    "views_roles",
+    
 ]
+

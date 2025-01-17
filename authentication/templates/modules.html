@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if is_super_admin %}
+    {% include 'include/super_admin_sidebar.html' %}
+{% elif is_system_admin %}
+    {% include 'include/system_admin_sidebar.html' %}
+{% endif %}
+<div class="container">
+    <h1 class="text-center">Modules Management</h1>
+    <div class="modules-content">
+        <div class="modules-table">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Module Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="modules-table-body">
+                    <!-- Data will be dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+        <div class="modules-form">
+            <h4>Add/Edit Module</h4>
+            <form id="add-edit-module-form">
+                <input type="hidden" id="module-id">
+                <div class="form-group">
+                    <label for="module-name">Module Name</label>
+                    <input type="text" id="module-name" class="form-control" placeholder="Enter module name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Module</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/modules.js' %}"></script>
+{% endblock %}

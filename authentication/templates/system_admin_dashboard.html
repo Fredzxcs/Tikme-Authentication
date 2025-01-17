@@ -7,7 +7,11 @@
 
 {% block content %}
 <!-- Sidebar -->
-{% include 'include/system_admin_sidebar.html' %}
+{% if is_super_admin %}
+    {% include 'include/super_admin_sidebar.html' %}
+{% elif is_system_admin %}
+    {% include 'include/system_admin_sidebar.html' %}
+{% endif %}
 
 
 {% endblock %}

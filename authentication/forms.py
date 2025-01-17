@@ -81,6 +81,12 @@ class TechSupportForm(forms.Form):
                 )
 
         return files
+
+class ForgotPasswordForm(forms.Form):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={"placeholder": "Enter your email", "class": "input-field"}),
+    )
     
 class SetupSecurityQuestionsForm(forms.Form):
     SECURITY_QUESTIONS = [

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/job_titles.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if is_super_admin %}
+    {% include 'include/super_admin_sidebar.html' %}
+{% elif is_system_admin %}
+    {% include 'include/system_admin_sidebar.html' %}
+{% endif %}
+<div class="container">
+    <h1 class="text-center">Job Title Management</h1>
+    <div class="job-title-content">
+        <div class="job-title-table">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Job Title Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="job-title-table-body">
+                    <!-- Data will be dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+        <div class="job-title-form">
+            <h4>Add/Edit Job Title</h4>
+            <form id="add-edit-job-title-form">
+                <input type="hidden" id="job-title-id">
+                <div class="form-group">
+                    <label for="job-title-name">Job Title Name</label>
+                    <input type="text" id="job-title-name" class="form-control" placeholder="Enter job title name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Job Title</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/job_titles.js' %}"></script>
+{% endblock %}

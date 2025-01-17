@@ -1,0 +1,153 @@
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #343a40;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Full viewport height */
+}
+
+/* Content Container */
+.container {
+    width: 130%; /* Default width for laptops and desktops */
+    max-width: 1200px;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Roles Content Layout */
+.roles-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Roles Table */
+.roles-table {
+    flex: 2; /* Increase table width */
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Roles Form */
+.roles-form {
+    flex: 1; /* Adjust the form width */
+    padding: 30px;
+    background-color: #edf2f7;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4a5568;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 16px;
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.4);
+}
+
+.btn {
+    font-size: 16px;
+    padding: 12px 20px;
+    border-radius: 6px;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    background-color: #4a5568;
+    color: #ffffff;
+    text-align: left;
+    padding: 16px;
+}
+
+.table tbody td {
+    padding: 14px;
+    font-size: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #edf2f7;
+}
+
+/* Media Queries */
+
+/* For smaller laptops (1024px and above) */
+@media (max-width: 1280px) {
+    .container {
+        width: 130%;
+    }
+    .roles-content {
+        flex-direction: column; /* Stack the table and form */
+        align-items: center;
+    }
+    .roles-table {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .roles-form {
+        width: 100%;
+    }
+}
+
+/* For large desktops (1440px and above) */
+@media (min-width: 1440px) {
+    .container {
+        width: 140%;
+        max-width: 1400px;
+    }
+    h1 {
+        font-size: 36px;
+    }
+    .roles-content {
+        gap: 40px;
+    }
+}

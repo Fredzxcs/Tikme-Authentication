@@ -29,17 +29,15 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'job_titles ' %}">
-                    <i class="uil uil-users-alt"></i>
+                <a href="{% url 'job_titles' %}">
+                    <i class="uil uil-briefcase"></i>
                     <span class="link-name">Job Title</span>
                 </a>
             </li>
-            <!-- Super Admin-Specific Links -->
-  
             <li>
                 <a href="{% url 'roles' %}">
                     <i class="uil uil-users-alt"></i>
-                    <span class="link-name">Groups</span>
+                    <span class="link-name">Roles</span>
                 </a>
             </li>
             <li>
@@ -48,7 +46,12 @@
                     <span class="link-name">Modules</span>
                 </a>
             </li>
-         
+            <li>
+                <a href="{% url 'permissions' %}">
+                    <i class="uil uil-key-skeleton"></i>
+                    <span class="link-name">Permissions</span>
+                </a>
+            </li>
         </ul>
 
         <!-- Logout and Dark Mode -->
