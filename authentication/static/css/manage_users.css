@@ -1,67 +1,160 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+  font-family: 'Poppins', Arial, sans-serif; /* More modern font */
+  background-color: #f9f9f9; /* Slightly softer background */
   color: #333;
+  line-height: 1.6; /* Improves text readability */
+  margin: 0;
+  padding: 0;
 }
 
 .container {
   max-width: 1200px;
-  margin: 20px auto;
+  margin: 40px auto; /* Added breathing room */
   padding: 20px;
+  background-color: #fff; /* White card effect */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 .dashboard-title {
   text-align: center;
-  font-size: 28px;
+  font-size: 32px; /* Slightly larger title */
   font-weight: bold;
+  color: #5a00e8; /* Primary color for branding */
   margin-bottom: 20px;
+  text-transform: uppercase; /* Standout heading */
+  margin-bottom: 10px; /* Adjust margin-bottom if necessary */
+  margin-top: 80px; /* Add or reduce margin-top for balance */
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Shadow for separation */
+  border-radius: 8px;
+  overflow: hidden; /* Rounds edges of the table */
 }
 
 .table th, .table td {
   text-align: center;
-  padding: 12px;
+  padding: 14px;
   vertical-align: middle;
+  font-size: 14px;
 }
 
 .table th {
-  background-color: #007bff;
+  background-color: #6f42c1; /* Default purple */
   color: #fff;
-  font-size: 14px;
   text-transform: uppercase;
   font-weight: bold;
 }
 
 .table tbody tr:hover {
-  background-color: #f1f1f1;
+  background-color: rgba(90, 0, 232, 0.1); /* Subtle hover effect */
+  transition: background-color 0.3s ease; /* Smooth hover animation */
 }
 
 .btn {
   font-size: 14px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   text-transform: uppercase;
   font-weight: bold;
+  color: #fff;
+  background-color: #6f42c1; /* Button default color */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth interaction */
+}
+
+.btn:hover {
+  background-color: #5a00e8; /* Button hover color */
+  transform: translateY(-2px); /* Slight "lift" effect */
 }
 
 .dropdown-toggle {
   width: 100%;
   text-align: center;
-  padding: 8px;
+  padding: 10px;
   font-size: 14px;
+  color: #6f42c1;
+  background-color: transparent;
+  border: 1px solid #6f42c1;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-toggle:hover {
+  background-color: #5a00e8;
+  color: #fff;
 }
 
 .dropdown-menu {
   text-align: left;
   font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Dropdown shadow for depth */
+}
+
+.dropdown-menu .dropdown-item {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #333;
 }
 
 .dropdown-menu .dropdown-item:hover {
   background-color: #e9ecef;
-  color: #007bff;
+  color: #5a00e8; /* Match hover color */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Media Queries for Desktop and Laptop Sizes */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  /* Laptop Style Adjustments */
+  .container {
+    max-width: 90%;
+    margin: 30px auto;
+    padding: 15px;
+  }
+
+  .dashboard-title {
+    font-size: 28px;
+    margin-bottom: 15px;
+  }
+
+  .table th, .table td {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+@media (min-width: 1441px) {
+  /* Desktop Style Adjustments */
+  .container {
+    max-width: 80%;
+    margin: 50px auto;
+    padding: 20px;
+  }
+
+  .dashboard-title {
+    font-size: 34px;
+    margin-bottom: 25px;
+  }
+
+  .table th, .table td {
+    font-size: 15px;
+    padding: 16px;
+  }
+
+  .btn {
+    font-size: 16px;
+    padding: 12px 18px;
+  }
 }

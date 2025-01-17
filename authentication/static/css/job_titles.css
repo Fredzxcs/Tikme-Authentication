@@ -13,12 +13,13 @@ body {
 
 /* Content Container */
 .container {
-    width: 130%; /* Adjust the width for better responsiveness */
-    max-width: 1200px;
+    width: 100%; /* Adjust width for better responsiveness */
+    max-width: 1200px; /* Align with your design */
     padding: 40px;
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 40px auto; /* Center container vertically and horizontally */
 }
 
 /* Header */
@@ -55,7 +56,7 @@ h1 {
 }
 
 .table thead th {
-    background-color: #4a5568;
+    background-color: #6f42c1; /* Purple */
     color: #ffffff;
     text-align: left;
     padding: 16px;
@@ -78,11 +79,16 @@ h1 {
 
 /* Job Title Form */
 .job-title-form {
-    flex: 2; /* Adjusted width of the form */
     padding: 30px;
     background-color: #edf2f7;
     border-radius: 8px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    margin-bottom: 20px;
+    color: #4a5568;
+    font-size: 24px;
 }
 
 /* Form Styling */
@@ -109,73 +115,69 @@ h1 {
 
 .form-control:focus {
     outline: none;
-    border-color: #4a90e2;
-    box-shadow: 0 0 5px rgba(74, 144, 226, 0.4);
+    border-color: #5a00e8;
+    box-shadow: 0 0 5px rgba(90, 0, 232, 0.4);
 }
 
+/* Button Styling */
 .btn {
-    font-size: 16px;
-    padding: 12px 20px;
+    font-size: 14px;
+    padding: 10px 15px;
     border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
+/* Add Button */
 .btn-primary {
-    background-color: #4a90e2;
+    background-color: #6f42c1; /* Purple */
     color: white;
+    border: none;
 }
 
 .btn-primary:hover {
-    background-color: #357abd;
+    background-color: #5a00e8; /* Darker purple */
 }
 
-.btn-warning {
-    background-color: #f6ad55;
+/* Edit Button */
+.btn-edit {
+    background-color: #EEB32F; /* Yellow */
     color: white;
+    border: none;
 }
 
-.btn-warning:hover {
-    background-color: #dd6b20;
+.btn-edit:hover {
+    background-color: #d9a021; /* Darker yellow */
 }
 
-.btn-danger {
-    background-color: #e53e3e;
+/* Delete Button */
+.btn-delete {
+    background-color: #FF3131; /* Red */
     color: white;
+    border: none;
 }
 
-.btn-danger:hover {
-    background-color: #c53030;
+.btn-delete:hover {
+    background-color: #e02525; /* Darker red */
 }
 
-/* Responsive Adjustments */
-
-/* For smaller laptops (1024px and below) */
-@media (max-width: 1280px) {
+/* Responsive Design */
+@media (max-width: 768px) {
     .container {
-        width: 130%;
+        padding: 20px;
     }
+
     .job-title-content {
-        flex-direction: column; /* Stack table and form vertically */
-        align-items: center;
+        flex-direction: column;
     }
+
     .job-title-table,
     .job-title-form {
         width: 100%;
-    }
-    .job-title-table {
         margin-bottom: 20px;
     }
-}
 
-/* For large desktops (1440px and above) */
-@media (min-width: 1440px) {
-    .container {
-        width: 140%;
-        max-width: 1400px;
-    }
     h1 {
-        font-size: 36px;
-    }
-    .job-title-content {
-        gap: 40px;
+        font-size: 24px;
     }
 }
