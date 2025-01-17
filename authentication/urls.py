@@ -1,74 +1,53 @@
 from django.urls import path
 from .views import *
 
-
 urlpatterns = [
-
-    # Admin Actions
+    # Authentication and General Access
     path('', views_auth.LandingPageView.as_view(), name='landing_page'),
     path('admin_login/', views_auth.LoginView.as_view(), name='admin_login'),
-    path('success/', views_static.success_page, name='admin_login'),
-    path('system_admin_dashboard/', views_auth.SystemAdminDashboardView.as_view(), name='system_admin_dashboard'),
-
-
-    # JWT Authentication URLs
-    path('register/', views_auth.RegisterView.as_view(), name='register'),
-    path('register-util/<int:pk>/', views_auth.RegisterViewRUD.as_view(), name='register-util'),
-    path('users/', views_auth.UserView.as_view(), name='users'),
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
 
-    path('groups/', views_super_admin.GroupListView.as_view(), name='groups'),
-    path('groups/<int:pk>/', views_super_admin.GroupDetailView.as_view(), name='groups-detail'),
+    # path('job-titles/', views_manage_users.JobTitleListCreateView.as_view(), name='job-title-list-create'),
+    # path('status/', views_manage_users.StatusListCreateView.as_view(), name='status-create'),
+    # path('status/<int:pk>/', views_manage_users.StatusDetailView.as_view(), name='status-detail'),
+    # path('questions/', views_manage_users.QuestionsListCreateView.as_view(), name='questions-create'),
+    # path('questions/<int:pk>/', views_manage_users.QuestionsDetailView.as_view(), name='questions-detail'),
 
-    # Password Management
-    path('forgot_password/', views_static.forgot_pass, name='forgot_password'),
-    # path('reset_password/<uidb64>/<token>/', reset_password, name='reset_password'),
+    # System Admin Dashboard
+    path('system_admin_dashboard/', views_dashboard.SystemAdminDashboardView.as_view(), name='system_admin_dashboard'),
+    
     path('tech_support/', views_emails.TechSupportView.as_view(), name='tech_support'),
+    path("forgot_password/", views_emails.ForgotPasswordView.as_view(), name="forgot_password"),
+    path('send-email/<int:employee_id>/onboarding/', views_emails.SendOnboardingEmailView.as_view(), name='send_onboarding_email'),
+    path('send-email/<int:employee_id>/locked/', views_emails.SendLockedEmailView.as_view(), name='send_locked_email'),
+    path('send-email/<int:employee_id>/reactivation/', views_emails.SendReactivationEmailView.as_view(), name='send_reactivation_email'),
 
-    path('get_users/', views_create.UserListCreateView.as_view(), name='get-users'),
-    # Roles URLs
-    path('roles/', views_create.RolesListCreateView.as_view(), name='roles-create'),
+    path('manage-users/', views_manage_users.ManageUsersView.as_view(), name='manage_users'),
+     path('add-employee/', views_manage_users.AddUserView.as_view(), name='add_employee'),
+    path('manage-users/<int:pk>/edit/', views_manage_users.EditUserView.as_view(), name='edit_user'),
+    path('manage-users/<int:pk>/delete/', views_manage_users.DeleteUserView.as_view(), name='delete_user'),
+    path('email-actions/<int:pk>/', views_manage_users.EmailActionsView.as_view(), name='email-actions'),
+    path('status-actions/<int:pk>/', views_manage_users.StatusActionsView.as_view(), name='status-actions'),
+    
+    # path('status/', views_manage_users.StatusListCreateView.as_view(), name='status-create'),
+    # path('status/<int:pk>/', views_manage_users.StatusDetailView.as_view(), name='status-detail'),
 
-    # Status URLs
-    path('status/', views_create.StatusListCreateView.as_view(), name='status-create'),
-    path('status/<int:pk>/', views_create.StatusDetailView.as_view(), name='status-detail'),
+    path('job-titles/', views_job_titles.JobTitleListCreateView.as_view(), name='job_titles'),
+    path('job-titles/<int:pk>/', views_job_titles.JobTitleDetailView.as_view(), name='job_titles_detail'),
 
-    # Questions URLs
-    path('questions/', views_create.QuestionsListCreateView.as_view(), name='questions-create'),
-    path('questions/<int:pk>/', views_create.QuestionsDetailView.as_view(), name='questions-detail'),
+    path('modules/', views_modules.ModuleListCreateView.as_view(), name='modules'),
+    path('modules/<int:pk>/', views_modules.ModuleDetailView.as_view(), name='modules-detail'),
+    
+    # Super Admin-Specific Actions
+    path('permissions/', views_permissions.PermissionListCreateView.as_view(), name='permissions'),
+    path('permissions/<int:pk>/', views_permissions.PermissionDetailView.as_view(), name='permissions-detail'),
 
-    # QuestionList URLs
-    path('question-list/', views_create.QuestionListListCreateView.as_view(), name='question-list-create'),
-    path('question-list/<int:pk>/', views_create.QuestionListDetailView.as_view(), name='question-list-detail'),
+    path('roles/', views_roles.RoleListCreateView.as_view(), name='roles'),
+    path('roles/<int:pk>/', views_roles.RoleDetailView.as_view(), name='roles-detail'),
+    path('roles/<int:role_id>/assign-permission/', views_permissions.AssignPermissionToRoleView.as_view(), name='assign-permission'),
+    path('roles-with-permissions/', views_permissions.RoleWithPermissionsView.as_view(), name='roles-with-permissions'),
 
-    path('modules/', views_create.ModulesListCreateView.as_view(), name='modules-list-create'),
-    # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    # Account Setup
-    # path('setup_account/<str:uidb64>/<str:token>/', setup_account, name='setup_account'),
-    # path('setup_password/<str:uidb64>/<str:token>/', setup_password, name='setup_password'),
-    # path('setup_security_questions/', setup_security_questions, name='setup_security_questions'),
-
-    # path('send_reset_password_email/', send_reset_password_email, name='send_reset_password_email'),
-
-    # # System Admin Views
-    # path('system_admin_dashboard/', system_admin_dashboard, name='system_admin_dashboard'),
-    # path('add_employee/', add_employee, name='add_employee'),
-    # path('change_status/<int:employee_id>/<str:status>/', change_status, name='change_status'),
-
-    # # Email Actions
-    # path('send_onboarding_email/', send_onboarding_email, name='send_onboarding_email'),
-
-    # # Reactivate Account
-    # path('reactivate_account/<uidb64>/<token>/', reactivate_account, name='reactivate_account'),
-
-    # # Locked Account Email Notifications
-    # path('send_account_locked_email/', send_account_locked_email, name='send_account_locked_email'),
-    # path('send_permanently_locked_email/', send_permanently_locked_email, name='send_permanently_locked_email'),
-
-    # # Custom JWT Authentication/Authorization (if necessary)
-    # path('jwt_authenticate/', jwt_authenticate, name='jwt_authenticate'),
-    path('unauthorized_access/', views_static.unauthorized_access, name='unauthorized_access'),
-    # path('invalid_link/', invalid_link, name='invalid_link'),
+    path('unauthorized_access/', views_auth.UnauthorizedAccessView.as_view(), name='unauthorized_access'),
+    # Utility and Static Pages
 ]
+

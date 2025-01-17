@@ -1,0 +1,112 @@
+from rest_framework.response import Response
+from rest_framework import status, views
+from django.shortcuts import render, get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
+from django.conf import settings
+from ..models import *
+from ..serializers import *
+import jwt
+
+
+# Utility Functions
+def validate_token(request):
+    """
+    Validates the JWT token provided in the request cookies.
+    """
+    token = request.COOKIES.get('jwt')
+    if not token:
+        raise AuthenticationFailed('Unauthorized: No token provided.')
+
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Token has expired.')
+    except jwt.InvalidTokenError:
+        raise AuthenticationFailed('Invalid token.')
+
+    return payload
+
+
+class JobTitleListCreateView(views.APIView):
+    """
+    Handles listing, creating job titles, and rendering the HTML template with users and job titles context.
+    """
+    def get(self, request):
+        payload = validate_token(request)
+        user = get_object_or_404(User, id=payload['id'])
+
+        if not user.role:
+            raise PermissionDenied("Your account does not have an assigned role.")
+
+        if user.role.role_name != "Super Admin":
+            return Response({"error": "You do not have permission to access job titles."}, status=status.HTTP_403_FORBIDDEN)
+
+        job_titles = JobTitle.objects.all()
+        job_title_serializer = JobTitleSerializer(job_titles, many=True)
+
+        if request.META.get("HTTP_ACCEPT", "").startswith("text/html"):
+            return render(
+                request,
+                "job_titles.html",
+                {
+                    "job_titles": job_title_serializer.data,
+                    "is_super_admin": user.role.role_name == "Super Admin",
+                    'is_system_admin': user.role.role_name == 'System Admin',
+                },
+            )
+
+        return Response(job_title_serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        payload = validate_token(request)
+        user = get_object_or_404(User, id=payload["id"])
+
+        if user.role.role_name != "Super Admin":
+            return Response({"error": "You do not have permission to create job titles."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = JobTitleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        job_title = serializer.save()
+
+        return Response(JobTitleSerializer(job_title).data, status=status.HTTP_201_CREATED)
+
+
+class JobTitleDetailView(views.APIView):
+    """
+    Handles retrieving, updating, and deleting a single job title.
+    """
+    def get(self, request, pk):
+        payload = validate_token(request)
+        user = get_object_or_404(User, id=payload["id"])
+
+        if user.role.role_name != "Super Admin":
+            return Response({"error": "You do not have permission to view job titles."}, status=status.HTTP_403_FORBIDDEN)
+
+        job_title = get_object_or_404(JobTitle, pk=pk)
+        serializer = JobTitleSerializer(job_title)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        payload = validate_token(request)
+        user = get_object_or_404(User, id=payload["id"])
+
+        if user.role.role_name != "Super Admin":
+            return Response({"error": "You do not have permission to edit job titles."}, status=status.HTTP_403_FORBIDDEN)
+
+        job_title = get_object_or_404(JobTitle, pk=pk)
+        serializer = JobTitleSerializer(job_title, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_job_title = serializer.save()
+
+        return Response(JobTitleSerializer(updated_job_title).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        payload = validate_token(request)
+        user = get_object_or_404(User, id=payload["id"])
+
+        if user.role.role_name != "Super Admin":
+            return Response({"error": "You do not have permission to delete job titles."}, status=status.HTTP_403_FORBIDDEN)
+
+        job_title = get_object_or_404(JobTitle, pk=pk)
+        job_title.delete()
+        return Response({"message": "Job title deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

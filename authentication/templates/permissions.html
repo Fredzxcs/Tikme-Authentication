@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/permissions.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if is_super_admin %}
+    {% include 'include/super_admin_sidebar.html' %}
+{% elif is_system_admin %}
+    {% include 'include/system_admin_sidebar.html' %}
+{% endif %}
+<div class="container mt-5">
+    <h1 class="text-center">Permissions Management</h1>
+    <div class="row mt-4">
+        <div class="col-8">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Permission Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="permissions-table-body">
+                    <!-- Permissions populated by JS -->
+                </tbody>
+            </table>
+        </div>
+        <div class="col-4">
+            <h4>Add New Permission</h4>
+            <form id="add-permission-form">
+                <div class="form-group">
+                    <label for="permission-name">Permission Name</label>
+                    <input type="text" id="permission-name" class="form-control" placeholder="Enter permission name" required />
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Permission</button>
+            </form>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-8">
+            <h4>Assign Permissions to Roles</h4>
+            <form id="assign-permission-form">
+                <div class="form-group">
+                    <label for="roles">Role</label>
+                    <select id="roles" class="form-control" required></select>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="permissions">Permission</label>
+                    <select id="permissions" class="form-control" required></select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Assign Permission</button>
+            </form>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <h4>Roles and Their Permissions</h4>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Permissions</th>
+                </tr>
+            </thead>
+            <tbody id="roles-permissions-table-body">
+                <!-- Roles and their permissions will be dynamically populated -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/permissions.js' %}"></script>
+{% endblock %}

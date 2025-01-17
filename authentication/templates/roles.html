@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/roles.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if is_super_admin %}
+    {% include 'include/super_admin_sidebar.html' %}
+{% elif is_system_admin %}
+    {% include 'include/system_admin_sidebar.html' %}
+{% endif %}
+<div class="container">
+    <h1>Roles Management</h1>
+    <div class="roles-content">
+        <div class="roles-table">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Role Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="roles-table-body">
+                    <!-- Dynamic Data -->
+                </tbody>
+            </table>
+        </div>
+        <div class="roles-form">
+            <h4>Add/Edit Role</h4>
+            <form id="add-edit-role-form">
+                <input type="hidden" id="role-id">
+                <div class="form-group">
+                    <label for="role-name">Role Name</label>
+                    <input type="text" id="role-name" class="form-control" placeholder="Enter role name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Role</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="{% static 'js/roles.js' %}"></script>
+{% endblock %}

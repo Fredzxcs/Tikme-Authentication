@@ -1,15 +1,37 @@
 from rest_framework import serializers
 from .models import *
 
-class ModulesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Modules
-        fields = ['id', 'module_assign']
 
-class RolesSerializer(serializers.ModelSerializer):
+class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Roles
-        fields = ['id', 'role_name']
+        model = Module
+        fields = ['id', 'module_name']
+
+    def validate_module_name(self, value):
+        if Module.objects.filter(module_name__iexact=value).exists():
+            raise serializers.ValidationError("A module with this name already exists.")
+        return value
+
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['id', 'name']
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Role
+        fields = ['id', 'role_name', 'permissions']
+
+
+class JobTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobTitle
+        fields = ['id', 'title_name']
+
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,74 +39,104 @@ class StatusSerializer(serializers.ModelSerializer):
         fields = ['id', 'status_name']
 
 
-class QuestionsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Questions
-        fields = ['id', 'question_desc']
-
-
 class QuestionListSerializer(serializers.ModelSerializer):
-    questions_FK = serializers.PrimaryKeyRelatedField(queryset = Questions.objects.all())
-
     class Meta:
         model = QuestionList
-        fields = ['id', 'questions_FK']
-
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = ['id', 'name']
+        fields = ['id']
 
 class UserSerializer(serializers.ModelSerializer):
-    status_FK = serializers.PrimaryKeyRelatedField(queryset = Status.objects.all())
-    question_list_FK = serializers.PrimaryKeyRelatedField(queryset = QuestionList.objects.all()) # Nested serializer for QuestionList
-    roles_FK = serializers.PrimaryKeyRelatedField(queryset = Roles.objects.all())
-    modules_FK = serializers.PrimaryKeyRelatedField(queryset = Modules.objects.all())
+    role = serializers.SlugRelatedField(slug_field='role_name', queryset=Role.objects.all())
+    module = serializers.SerializerMethodField()  # Use SerializerMethodField to get display values
+    job_title = serializers.SerializerMethodField()
+    status = serializers.SlugRelatedField(slug_field='status_name', queryset=Status.objects.all(), allow_null=True)
+
 
     class Meta:
         model = User
         fields = [
-            'id', 
-            'name', 
-            'email', 
-            'employee_number', 
-            'password', 
-            'roles_FK', 
-            'status_FK', 
-            'question_list_FK', 
-            'modules_FK'
+            'id', 'employee_number', 'email', 'password',
+            'first_name', 'last_name', 'role', 'module', 'job_title',
+            'status'
         ]
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},  # Password is optional
+        }
+
+    def get_module(self, obj):
+        return obj.module.module_name if obj.module else None
+
+    def get_job_title(self, obj):
+        return obj.job_title.title_name if obj.job_title else None
+    
+    def validate(self, data):
+        """
+        Validate user input:
+        - Ensure only one Super Admin can exist.
+        - Validate module and job title requirements based on role.
+        """
+        role = data.get('role')
+        module = data.get('module')
+        job_title = data.get('job_title')
+
+        # Ensure only one Super Admin exists
+        if role.role_name == "Super Admin":
+            if self.instance:  # Update scenario
+                if User.objects.filter(role__role_name="Super Admin").exclude(id=self.instance.id).exists():
+                    raise serializers.ValidationError("Only one Super Admin is allowed.")
+            else:  # Creation scenario
+                if User.objects.filter(role__role_name="Super Admin").exists():
+                    raise serializers.ValidationError("Only one Super Admin is allowed.")
+
+        # Validate Module for certain roles
+        if role.role_name in ["Manager", "Employee"] and not module:
+            raise serializers.ValidationError(
+                {"module": f"Module is required for the {role.role_name} role."}
+            )
+        if role.role_name == "System Admin" and module:
+            raise serializers.ValidationError(
+                {"module": "Module is not allowed for the System Admin role."}
+            )
+
+        # Ensure Job Title exists for roles where it's applicable
+        if job_title and not JobTitle.objects.filter(title_name=job_title.title_name).exists():
+            raise serializers.ValidationError(
+                {"job_title": "The specified job title does not exist."}
+            )
+
+        return data
 
     def create(self, validated_data):
-        # Handle nested serializers if needed
-        status_data = validated_data.pop('status_FK', None)
-        question_list_data = validated_data.pop('question_list_FK', None)
-        
-        user = User(**validated_data)
-        user.set_password(validated_data['password'])  # Hash password
-        user.save()
+        """
+        Custom create method to handle related fields (module, job_title).
+        """
+        module_data = validated_data.pop('module', None)
+        job_title_data = validated_data.pop('job_title', None)
+        user = super().create(validated_data)
 
-        if status_data:
-            status = Status.objects.create(**status_data)
-            user.status_FK = status
-
-        if question_list_data:
-            questions_data = question_list_data.pop('questions_FK', None)
-            if questions_data:
-                questions = Questions.objects.create(**questions_data)
-                question_list = QuestionList.objects.create(questions_FK=questions)
-                user.question_list_FK = question_list
+        # Map module and job title
+        if module_data:
+            user.module = Module.objects.get(module_name=module_data)
+        if job_title_data:
+            user.job_title = JobTitle.objects.get(title_name=job_title_data)
 
         user.save()
         return user
-    
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
-        if password is not None:
-            instance.set_password(password)
+
+    def update(self, instance, validated_data):
+        """
+        Custom update method to handle related fields (module, job_title).
+        """
+        module_data = validated_data.pop('module', None)
+        job_title_data = validated_data.pop('job_title', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        # Update module and job title
+        if module_data:
+            instance.module = Module.objects.get(module_name=module_data)
+        if job_title_data:
+            instance.job_title = JobTitle.objects.get(title_name=job_title_data)
+
         instance.save()
         return instance
-    
-    
