@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const moduleSelect = document.getElementById("module");
     const jobTitleSelect = document.getElementById("jobTitle");
     const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    
 
     const csrfToken = csrfTokenElement.value;
 
@@ -40,19 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Generic function to fetch data for dropdowns
-    async function fetchData(url, selectElement, placeholder) {
+    async function fetchData(url, selectElement, placeholder, nameField) {
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Failed to fetch data from ${url}`);
             const data = await response.json();
             selectElement.innerHTML = `<option value="">${placeholder}</option>` +
-                data.map(item => `<option value="${item.id}">${item.title_name || item.module_name || item.role_name}</option>`).join("");
+                data.map(item => `<option value="${item[nameField]}">${item[nameField]}</option>`).join("");
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
             showAlert("error", "Error", `Failed to fetch ${placeholder.toLowerCase()}.`);
         }
     }
-
+    
     // Fetch users and populate the user table
     async function fetchUsers() {
         try {
@@ -60,7 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) throw new Error("Failed to fetch users.");
             const data = await response.json();
 
-            userTableBody.innerHTML = data.employees.map(user => `
+            userTableBody.innerHTML = data.employees.map(user => {
+                const isSuperAdmin = user.role === "Super Admin";
+                const isPending = user.status === "Pending";
+                const isInactive = user.status === "Inactive";
+                const isSuspended = user.status === "Suspended";
+
+                return `
                 <tr>
                     <td>${user.id}</td>
                     <td>${user.employee_number}</td>
@@ -88,14 +95,30 @@ document.addEventListener("DOMContentLoaded", () => {
                                 Email Actions
                             </button>
                             <ul class="dropdown-menu">
-                                <li><button class="dropdown-item email-onboarding-btn" data-id="${user.id}">Onboarding Email</button></li>
-                                <li><button class="dropdown-item email-locked-btn" data-id="${user.id}">Locked Email</button></li>
-                                <li><button class="dropdown-item email-reactivation-btn" data-id="${user.id}">Reactivation Email</button></li>
+                                <li>
+                                    <button class="dropdown-item email-onboarding-btn ${isSuperAdmin || !isPending ? "disabled" : ""}" 
+                                        data-id="${user.id}" data-email-type="onboarding">
+                                        Onboarding Email
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item email-locked-btn ${isSuperAdmin || !isInactive ? "disabled" : ""}" 
+                                        data-id="${user.id}" data-email-type="locked">
+                                        Locked Email
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item email-reactivation-btn ${isSuperAdmin || !isSuspended ? "disabled" : ""}" 
+                                        data-id="${user.id}" data-email-type="reactivation">
+                                        Reactivation Email
+                                    </button>
+                                </li>
                             </ul>
                         </div>
                     </td>
                 </tr>
-            `).join("");
+                `;
+            }).join("");
 
             attachEventListeners();
         } catch (error) {
@@ -106,10 +129,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Show or hide the "Module" dropdown based on role selection
     function toggleModuleDropdown(selectedRole) {
+        const moduleGroup = moduleSelect.closest(".mb-3");
         if (selectedRole === "System Admin") {
-            moduleSelect.closest(".mb-3").style.display = "none";
+            moduleGroup.style.display = "none";
+            moduleSelect.value = "";
+        } else if (selectedRole === "Manager") {
+            moduleGroup.style.display = "block";
         } else {
-            moduleSelect.closest(".mb-3").style.display = "block";
+            moduleGroup.style.display = "none";
+            moduleSelect.value = "";
         }
     }
 
@@ -124,6 +152,13 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         const formData = new FormData(addUserForm);
         const payload = Object.fromEntries(formData.entries());
+
+        if (payload.role === "Manager" && !payload.module) {
+            showAlert("error", "Validation Error", "Module is required for the Manager role.");
+            return;
+        }
+
+        console.log("Payload being sent:", JSON.stringify(payload)); // Debugging
 
         try {
             const response = await fetch("/add-employee/", {
@@ -143,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const modal = bootstrap.Modal.getInstance(document.getElementById("addUserModal"));
                 modal.hide();
             } else {
-                console.error("Validation Error:", responseData.error);
+                // Handle backend validation errors, including module issues
                 const errorMessage = typeof responseData.error === "object"
                     ? Object.entries(responseData.error).map(([key, value]) => `${key}: ${value}`).join("\n")
                     : responseData.error;
@@ -154,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showAlert("error", "Error", "An unexpected error occurred.");
         }
     }
-
+    
     // Handle persistent backdrop removal
     document.addEventListener("hidden.bs.modal", function () {
         const backdrop = document.querySelector('.modal-backdrop');
@@ -220,6 +255,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+
+    // Send email action
+    async function handleEmailAction(userId, emailType) {
+        try {
+            const response = await fetch(`/email-actions/${userId}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                },
+                body: JSON.stringify({ email_type: emailType }),
+            });
+
+            const responseData = await response.json();
+            if (response.ok) {
+                showAlert("success", "Success", responseData.message);
+                fetchUsers(); // Refresh the table
+            } else {
+                showAlert("error", "Error", responseData.error || "Failed to send email.");
+            }
+        } catch (error) {
+            console.error("Error sending email action:", error);
+            showAlert("error", "Error", "An unexpected error occurred.");
+        }
+    }
+
     // Attach event listeners to dynamic buttons
     function attachEventListeners() {
         document.querySelectorAll(".edit-user-btn").forEach(button => {
@@ -232,19 +293,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.querySelectorAll(".email-onboarding-btn").forEach(button => {
             button.addEventListener("click", () => {
-                console.log(`Send onboarding email to user with ID: ${button.dataset.id}`);
+                if (!button.classList.contains("disabled")) {
+                    handleEmailAction(button.dataset.id, "onboarding");
+                }
             });
         });
 
         document.querySelectorAll(".email-locked-btn").forEach(button => {
             button.addEventListener("click", () => {
-                console.log(`Send locked email to user with ID: ${button.dataset.id}`);
+                if (!button.classList.contains("disabled")) {
+                    handleEmailAction(button.dataset.id, "locked");
+                }
             });
         });
 
         document.querySelectorAll(".email-reactivation-btn").forEach(button => {
             button.addEventListener("click", () => {
-                console.log(`Send reactivation email to user with ID: ${button.dataset.id}`);
+                if (!button.classList.contains("disabled")) {
+                    handleEmailAction(button.dataset.id, "reactivation");
+                }
             });
         });
     }
@@ -252,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize the page
     addUserForm.onsubmit = handleAddEditUser;
     fetchRoles();
-    fetchData("/modules/", moduleSelect, "Select Module");
-    fetchData("/job-titles/", jobTitleSelect, "Select Job Title");
+    fetchData("/modules/", moduleSelect, "Select Module", "module_name");
+    fetchData("/job-titles/", jobTitleSelect, "Select Job Title", "title_name");
     fetchUsers();
 });

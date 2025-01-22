@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
 from .models import *
 
 
@@ -39,104 +40,119 @@ class StatusSerializer(serializers.ModelSerializer):
         fields = ['id', 'status_name']
 
 
-class QuestionListSerializer(serializers.ModelSerializer):
+class SecurityQuestionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = QuestionList
-        fields = ['id']
+        model = SecurityQuestion
+        fields = ['id', 'question_text']
+
+
+class SecurityAnswerSerializer(serializers.ModelSerializer):
+    question = serializers.PrimaryKeyRelatedField(queryset=SecurityQuestion.objects.all())
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['id', 'question', 'answer']
+
+    def validate(self, data):
+        # Check if answer is provided
+        if not data.get('answer'):
+            raise serializers.ValidationError({"answer": "An answer is required for the security question."})
+        return data
+
+
+
+class SetupPasswordSerializer(serializers.Serializer):
+    new_password1 = serializers.CharField(write_only=True, required=True)
+    new_password2 = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        # Check if passwords match
+        if data['new_password1'] != data['new_password2']:
+            raise serializers.ValidationError({"new_password2": "Passwords do not match."})
+        # Validate password strength
+        validate_password(data['new_password1'])
+        return data
+
+    def save(self, user):
+        user.set_password(self.validated_data['new_password1'])
+        user.save()
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(slug_field='role_name', queryset=Role.objects.all())
-    module = serializers.SerializerMethodField()  # Use SerializerMethodField to get display values
-    job_title = serializers.SerializerMethodField()
+    module = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    job_title = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     status = serializers.SlugRelatedField(slug_field='status_name', queryset=Status.objects.all(), allow_null=True)
-
+    security_answers = SecurityAnswerSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
         fields = [
             'id', 'employee_number', 'email', 'password',
             'first_name', 'last_name', 'role', 'module', 'job_title',
-            'status'
+            'status', 'security_answers'
         ]
         extra_kwargs = {
-            'password': {'write_only': True, 'required': False},  # Password is optional
+            'password': {'write_only': True, 'required': False},
         }
 
-    def get_module(self, obj):
-        return obj.module.module_name if obj.module else None
-
-    def get_job_title(self, obj):
-        return obj.job_title.title_name if obj.job_title else None
-    
     def validate(self, data):
-        """
-        Validate user input:
-        - Ensure only one Super Admin can exist.
-        - Validate module and job title requirements based on role.
-        """
         role = data.get('role')
-        module = data.get('module')
-        job_title = data.get('job_title')
+        module_name = data.get('module')
+        job_title_name = data.get('job_title')
 
         # Ensure only one Super Admin exists
         if role.role_name == "Super Admin":
-            if self.instance:  # Update scenario
+            if self.instance:
                 if User.objects.filter(role__role_name="Super Admin").exclude(id=self.instance.id).exists():
                     raise serializers.ValidationError("Only one Super Admin is allowed.")
-            else:  # Creation scenario
+            else:
                 if User.objects.filter(role__role_name="Super Admin").exists():
                     raise serializers.ValidationError("Only one Super Admin is allowed.")
 
-        # Validate Module for certain roles
-        if role.role_name in ["Manager", "Employee"] and not module:
-            raise serializers.ValidationError(
-                {"module": f"Module is required for the {role.role_name} role."}
-            )
-        if role.role_name == "System Admin" and module:
-            raise serializers.ValidationError(
-                {"module": "Module is not allowed for the System Admin role."}
-            )
+        # Validate module and role requirements
+        if role.role_name in ["Manager", "Employee"] and not module_name:
+            raise serializers.ValidationError(f"Module is required for the {role.role_name} role.")
+        if role.role_name == "System Admin" and module_name:
+            raise serializers.ValidationError("Module is not allowed for the System Admin role.")
 
-        # Ensure Job Title exists for roles where it's applicable
-        if job_title and not JobTitle.objects.filter(title_name=job_title.title_name).exists():
-            raise serializers.ValidationError(
-                {"job_title": "The specified job title does not exist."}
-            )
+        # Validate the existence of module and job title
+        if module_name and not Module.objects.filter(module_name=module_name).exists():
+            raise serializers.ValidationError(f"Module '{module_name}' does not exist.")
+        if job_title_name and not JobTitle.objects.filter(title_name=job_title_name).exists():
+            raise serializers.ValidationError(f"Job title '{job_title_name}' does not exist.")
 
         return data
 
     def create(self, validated_data):
-        """
-        Custom create method to handle related fields (module, job_title).
-        """
-        module_data = validated_data.pop('module', None)
-        job_title_data = validated_data.pop('job_title', None)
+        module_name = validated_data.pop('module', None)
+        job_title_name = validated_data.pop('job_title', None)
         user = super().create(validated_data)
 
-        # Map module and job title
-        if module_data:
-            user.module = Module.objects.get(module_name=module_data)
-        if job_title_data:
-            user.job_title = JobTitle.objects.get(title_name=job_title_data)
+        if module_name:
+            user.module = Module.objects.get(module_name=module_name)
+        if job_title_name:
+            user.job_title = JobTitle.objects.get(title_name=job_title_name)
 
         user.save()
         return user
 
     def update(self, instance, validated_data):
-        """
-        Custom update method to handle related fields (module, job_title).
-        """
-        module_data = validated_data.pop('module', None)
-        job_title_data = validated_data.pop('job_title', None)
+        module_name = validated_data.pop('module', None)
+        job_title_name = validated_data.pop('job_title', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        # Update module and job title
-        if module_data:
-            instance.module = Module.objects.get(module_name=module_data)
-        if job_title_data:
-            instance.job_title = JobTitle.objects.get(title_name=job_title_data)
+        if module_name:
+            instance.module = Module.objects.get(module_name=module_name)
+        else:
+            instance.module = None  # Clear the module if not provided
+        if job_title_name:
+            instance.job_title = JobTitle.objects.get(title_name=job_title_name)
+        else:
+            instance.job_title = None  # Clear the job title if not provided
 
         instance.save()
         return instance

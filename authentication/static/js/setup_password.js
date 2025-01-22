@@ -1,93 +1,183 @@
-// Show modal function
-function showModal(modalId) {
-    const modal = new bootstrap.Modal(document.getElementById(modalId));
-    modal.show();
-}
+// Toggle visibility of password fields
+function toggleVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    const eyeIcon = field.nextElementSibling.querySelector('i');
 
-// Redirect to login after success
-function redirectToLogin() {
-    window.location.href = "{% url 'admin_login' %}";
-}
-
-// Check password strength
-function checkPasswordStrength(password) {
-    const lengthCriteria = /.{8,}/;
-    const digitCriteria = /\d/;
-    const lowercaseCriteria = /[a-z]/;
-    const uppercaseCriteria = /[A-Z]/;
-
-    if (password.match(lengthCriteria) && password.match(digitCriteria) && password.match(lowercaseCriteria) && password.match(uppercaseCriteria)) {
-        return 'Strong';
-    } else if (password.length >= 6) {
-        return 'Medium';
+    if (field.type === 'password') {
+        field.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
     } else {
-        return 'Weak';
+        field.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
     }
 }
 
-// Validate password
-function validatePassword(password, confirmPassword) {
+// Update password strength and requirements
+function updatePasswordStrengthIndicator(password) {
+    const lengthCriteria = /.{8,}/;
+    const uppercaseCriteria = /[A-Z]/;
+    const lowercaseCriteria = /[a-z]/;
+    const digitCriteria = /\d/;
+
+    const requirements = {
+        length: lengthCriteria.test(password),
+        uppercase: uppercaseCriteria.test(password),
+        lowercase: lowercaseCriteria.test(password),
+        digit: digitCriteria.test(password),
+    };
+
+    const strengthIndicator = document.getElementById('password-strength-indicator');
+    const requirementElements = {
+        length: document.getElementById('length'),
+        uppercase: document.getElementById('uppercase'),
+        lowercase: document.getElementById('lowercase'),
+        digit: document.getElementById('digit'),
+    };
+
+    // Update requirements list
+    Object.entries(requirements).forEach(([key, isValid]) => {
+        requirementElements[key].className = isValid ? 'valid' : 'invalid';
+    });
+
+    // Update password strength indicator
+    const strength = Object.values(requirements).filter(Boolean).length;
+    let strengthText = 'Weak';
+    let strengthColor = 'red';
+
+    if (strength === 4) {
+        strengthText = 'Strong';
+        strengthColor = 'green';
+    } else if (strength === 3) {
+        strengthText = 'Medium';
+        strengthColor = 'orange';
+    }
+
+    strengthIndicator.textContent = `Password strength: ${strengthText}`;
+    strengthIndicator.style.color = strengthColor;
+}
+
+// Show error messages using SweetAlert
+function showError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: message,
+    });
+}
+
+// Show success messages using SweetAlert
+function showSuccess(message, redirectUrl) {
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: message,
+        confirmButtonText: 'Next',
+    }).then(() => {
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
+    });
+}
+
+// Validate passwords
+function validatePasswords(password, confirmPassword) {
+    if (!password || !confirmPassword) {
+        showError('Both password fields are required.');
+        return false;
+    }
+
     if (password !== confirmPassword) {
-        return 'Passwords do not match.';
+        showError('Passwords do not match.');
+        return false;
     }
 
-    const strength = checkPasswordStrength(password);
-    if (strength === 'Weak') {
-        return 'Your password is too weak. Please choose a stronger password.';
+    const strengthIndicator = document.getElementById('password-strength-indicator');
+    if (strengthIndicator.textContent.includes('Weak')) {
+        showError('Your password is too weak. Please choose a stronger password.');
+        return false;
     }
 
-    return null;
+    return true;
 }
 
 // Handle form submission
-document.getElementById('password-setup-form')?.addEventListener('submit', async function (event) {
+async function submitPassword(event) {
     event.preventDefault();
 
-    const form = event.target;
-    const password = form.querySelector('input[name="new_password1"]').value;
-    const confirmPassword = form.querySelector('input[name="new_password2"]').value;
+    const form = document.getElementById('password-setup-form');
 
-    const validationError = validatePassword(password, confirmPassword);
-    if (validationError) {
-        const errorMessage = document.getElementById('error-message');
-        errorMessage.textContent = validationError;
-        errorMessage.classList.remove('d-none');
+    // Safely retrieve form elements
+    const passwordField = form.querySelector('input[name="new_password1"]');
+    const confirmPasswordField = form.querySelector('input[name="new_password2"]');
+    const tokenField = form.querySelector('input[name="token"]');
+    const uidb64Field = form.querySelector('input[name="uidb64"]');
+
+    if (!passwordField || !confirmPasswordField || !tokenField || !uidb64Field) {
+        console.error('Form fields missing.');
+        showError('A required field is missing. Please contact support.');
         return;
     }
 
-    showModal('loadingModal');
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+    const token = tokenField.value;
+    const uidb64 = uidb64Field.value;
+
+    // Retrieve security answers from localStorage
+    const securityAnswers = localStorage.getItem('securityAnswers');
+    if (!securityAnswers) {
+        showError('Security answers are missing. Please restart the setup process.');
+        return;
+    }
+
+    if (!validatePasswords(password, confirmPassword)) return;
 
     try {
-        const response = await fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        Swal.fire({
+            title: 'Submitting...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             },
-            body: new FormData(form),
         });
 
-        const loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
-        loadingModal.hide();
+        const response = await fetch(`/setup-password/${uidb64}/${token}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                new_password1: password,
+                new_password2: confirmPassword,
+                security_answers: JSON.parse(securityAnswers),
+            }),
+        });
 
         if (response.ok) {
-            showModal('successModal');
+            showSuccess('Password set successfully!', '/admin_login/');
         } else {
-            showModal('errorModal');
+            const errorData = await response.json();
+            showError(errorData.error || 'Failed to set password.');
         }
     } catch (error) {
-        const loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
-        loadingModal.hide();
-        showModal('errorModal');
+        console.error('Error occurred while setting password:', error);
+        showError('An error occurred while setting your password. Please try again.');
     }
+}
+
+// Add real-time password strength indicator
+document.getElementById('new-password1')?.addEventListener('input', function (e) {
+    updatePasswordStrengthIndicator(e.target.value);
 });
 
-// Update password strength indicator on input
-document.querySelector('input[name="new_password1"]')?.addEventListener('input', function () {
-    const password = this.value;
-    const strengthIndicator = document.getElementById('password-strength-indicator');
+// Add event listener for form submission
+document.getElementById('password-setup-form')?.addEventListener('submit', submitPassword);
 
-    const strength = checkPasswordStrength(password);
-    strengthIndicator.textContent = `Password strength: ${strength}`;
-    strengthIndicator.className = '';
-    strengthIndicator.classList.add(strength.toLowerCase());
+console.log({
+    new_password1: password,
+    new_password2: confirmPassword,
+    security_answers: JSON.parse(securityAnswers),
 });

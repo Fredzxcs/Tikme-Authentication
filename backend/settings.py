@@ -20,7 +20,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(','
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://reservations.example.com/dashboard/')
+RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://192.168.100.7:8003/')
 LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
 FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboard/')
 
@@ -55,8 +55,8 @@ LOGGING = {
 
 # JWT Settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=24),
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
@@ -147,12 +147,9 @@ DATABASES = {
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_USER_PASSWORD'),
         'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
     
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
 }
 
 

@@ -7,23 +7,22 @@ urlpatterns = [
     path('admin_login/', views_auth.LoginView.as_view(), name='admin_login'),
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
 
-    # path('job-titles/', views_manage_users.JobTitleListCreateView.as_view(), name='job-title-list-create'),
-    # path('status/', views_manage_users.StatusListCreateView.as_view(), name='status-create'),
-    # path('status/<int:pk>/', views_manage_users.StatusDetailView.as_view(), name='status-detail'),
-    # path('questions/', views_manage_users.QuestionsListCreateView.as_view(), name='questions-create'),
-    # path('questions/<int:pk>/', views_manage_users.QuestionsDetailView.as_view(), name='questions-detail'),
-
     # System Admin Dashboard
     path('system_admin_dashboard/', views_dashboard.SystemAdminDashboardView.as_view(), name='system_admin_dashboard'),
     
     path('tech_support/', views_emails.TechSupportView.as_view(), name='tech_support'),
     path("forgot_password/", views_emails.ForgotPasswordView.as_view(), name="forgot_password"),
+    
     path('send-email/<int:employee_id>/onboarding/', views_emails.SendOnboardingEmailView.as_view(), name='send_onboarding_email'),
     path('send-email/<int:employee_id>/locked/', views_emails.SendLockedEmailView.as_view(), name='send_locked_email'),
     path('send-email/<int:employee_id>/reactivation/', views_emails.SendReactivationEmailView.as_view(), name='send_reactivation_email'),
 
+    path('setup-account/<str:uidb64>/<str:token>/', views_setup_account.SetupAccountView.as_view(), name='setup_account'),
+    path('setup-password/<str:uidb64>/<str:token>/', views_setup_account.SetupPasswordView.as_view(), name='setup_password'),
+    path('refresh-token/', views_setup_account.RefreshTokenView.as_view(), name='refresh_token'),
+
     path('manage-users/', views_manage_users.ManageUsersView.as_view(), name='manage_users'),
-     path('add-employee/', views_manage_users.AddUserView.as_view(), name='add_employee'),
+    path('add-employee/', views_manage_users.AddUserView.as_view(), name='add_employee'),
     path('manage-users/<int:pk>/edit/', views_manage_users.EditUserView.as_view(), name='edit_user'),
     path('manage-users/<int:pk>/delete/', views_manage_users.DeleteUserView.as_view(), name='delete_user'),
     path('email-actions/<int:pk>/', views_manage_users.EmailActionsView.as_view(), name='email-actions'),
