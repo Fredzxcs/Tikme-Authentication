@@ -5,7 +5,6 @@ from django.conf import settings
 
 
 class User(AbstractUser):
-    # Removed 'name' field and replaced it with 'first_name' and 'last_name' only
     email = models.EmailField(unique=True)
     employee_number = models.CharField(max_length=255, unique=True)
 
@@ -13,14 +12,11 @@ class User(AbstractUser):
     status = models.ForeignKey(
         'Status', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
     )
-    question_list = models.ForeignKey(
-        'QuestionList', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
-    )
     role = models.ForeignKey(
-        'Role', on_delete=models.CASCADE, null=True, related_name="users"
-    )  # Critical relationship for role-based access
+        'Role', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
+    )  # Fixed `on_delete` to SET_NULL for consistency
     module = models.ForeignKey(
-        'Module', on_delete=models.CASCADE, null=True, blank=True, related_name="users"
+        'Module', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
     )
     job_title = models.ForeignKey(
         'JobTitle', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
@@ -32,9 +28,6 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     objects = UserManager()
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.employee_number} - {self.first_name} {self.last_name}"
@@ -50,31 +43,32 @@ class Role(models.Model):
         return self.role_name
 
 
-class Status(models.Model):
-    STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
-        ('suspended', 'Suspended'),
-    )
-    status_name = models.CharField(max_length=50, unique=True, choices=STATUS_CHOICES)
+class Status(models.Model): 
+    status_name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.status_name
 
 
-class QuestionList(models.Model):
-    questions = models.ManyToManyField('Question', related_name="question_lists")
+class SecurityQuestion(models.Model):
+    question_text = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Question List {self.id}"
+        return self.question_text
 
 
-class Question(models.Model):
-    description = models.CharField(max_length=255)
+class SecurityAnswer(models.Model):
+    user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="security_answers")
+    question = models.ForeignKey(SecurityQuestion, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'question'], name='unique_user_question')
+        ]
 
     def __str__(self):
-        return self.description
+        return f"{self.user.employee_number} - {self.question.question_text}"
 
 
 class Module(models.Model):

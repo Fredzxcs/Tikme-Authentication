@@ -67,80 +67,143 @@ def send_forgot_password_email(user_name, email, reset_link):
         logger.error(f"Error sending email to {email}: {str(e)}")
         raise e
 
+def send_temp_locked_email(employee):
+    """
+    Sends an email notification for temporary account lock.
+    """
+    try:
+        subject = "Your Tikme Dine Account is Temporarily Locked"
+        body = render_to_string("emails/temp_locked_email.html", {
+            "username": employee.get_full_name() or employee.email,
+            "unlock_time": employee.locked_until,
+            "year": now().year,
+        })
+        email_message = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email],
+        )
+        email_message.content_subtype = "html"
+        email_message.send()
+        logger.info(f"Temporary lock email sent to {employee.email}")
+    except Exception as e:
+        logger.error(f"Error sending temporary lock email: {str(e)}")
+        raise e
+
+
+def send_permanent_locked_email(employee):
+    """
+    Sends an email notification for permanent account lock.
+    """
+    try:
+        subject = "Your Tikme Dine Account is Permanently Locked"
+        body = render_to_string("emails/permanent_locked_email.html", {
+            "username": employee.get_full_name() or employee.email,
+            "year": now().year,
+        })
+        email_message = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email],
+        )
+        email_message.content_subtype = "html"
+        email_message.send()
+        logger.info(f"Permanent lock email sent to {employee.email}")
+    except Exception as e:
+        logger.error(f"Error sending permanent lock email: {str(e)}")
+        raise e
+
 
 def send_onboarding_email(request, employee):
     """
     Sends an onboarding email with account setup instructions.
     """
-    # Generate a token and account setup link
-    refresh = RefreshToken.for_user(employee)
-    access_token = str(refresh.access_token)
+    try:
+        # Generate a token and account setup link
+        refresh = RefreshToken.for_user(employee)
+        access_token = str(refresh.access_token)
+        uid = urlsafe_base64_encode(force_bytes(employee.pk))
+        link = reverse('setup_account', kwargs={'uidb64': uid, 'token': access_token})
+        full_link = request.build_absolute_uri(link)
 
-    uid = urlsafe_base64_encode(force_bytes(employee.pk))
-    link = reverse('setup_account', kwargs={'uidb64': uid, 'token': access_token})
-    full_link = request.build_absolute_uri(link)
+        # Get the logo URL
+        image_url = request.build_absolute_uri(staticfiles_storage.url('images/tikme-logo.png'))
 
-    # Get the logo URL
-    image_url = request.build_absolute_uri(staticfiles_storage.url('images/tikme-logo.png'))
+        # Prepare email content
+        email_subject = "Welcome to Tikme Dine!"
+        username = employee.get_full_name() if employee.get_full_name() else employee.email
+        email_body = render_to_string('emails/onboarding_email.html', {
+            'employee': employee,
+            'username': username,
+            'full_link': full_link,
+            'image_url': image_url,
+            'year': now().year,
+        })
 
-    # Render the onboarding email template
-    email_subject = "Welcome to Tikme Dine!"
-    email_body = render_to_string('email_templates/onboarding_email.html', {
-        'employee': employee,
-        'username': getattr(employee, 'username', employee.email),  # Fallback to email if username doesn't exist
-        'full_link': full_link,
-        'image_url': image_url,
-        'year': now().year,
-    })
-
-    email = EmailMessage(
-        subject=email_subject,
-        body=email_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[employee.email]
-    )
-    email.content_subtype = "html"
-    email.send()
+        # Send email
+        email = EmailMessage(
+            subject=email_subject,
+            body=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email]
+        )
+        email.content_subtype = "html"
+        email.send()
+    except Exception as e:
+        print(f"Error sending onboarding email: {str(e)}")
 
 
 def send_locked_email(employee):
     """
     Sends an email notification when an account is locked.
     """
-    email_subject = "Your Tikme Dine Account is Locked"
-    email_body = render_to_string('email_templates/locked_email.html', {
-        'username': getattr(employee, 'username', employee.email),  # Fallback to email if username doesn't exist
-        'year': now().year,
-    })
+    try:
+        # Prepare email content
+        email_subject = "Your Tikme Dine Account is Locked"
+        username = employee.get_full_name() if employee.get_full_name() else employee.email
+        email_body = render_to_string('emails/locked_email.html', {
+            'username': username,
+            'year': now().year,
+        })
 
-    email = EmailMessage(
-        subject=email_subject,
-        body=email_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[employee.email]
-    )
-    email.content_subtype = "html"
-    email.send()
+        # Send email
+        email = EmailMessage(
+            subject=email_subject,
+            body=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email]
+        )
+        email.content_subtype = "html"
+        email.send()
+    except Exception as e:
+        print(f"Error sending locked email: {str(e)}")
 
 
 def send_reactivation_email(employee):
     """
     Sends an account reactivation email.
     """
-    login_link = settings.LOGIN_URL or 'https://example.com/login'  # Dynamically fetch login URL
+    try:
+        # Prepare email content
+        login_link = settings.LOGIN_URL or 'https://example.com/login'  # Fallback login URL
+        email_subject = "Your Tikme Dine Account Has Been Reactivated"
+        username = employee.get_full_name() if employee.get_full_name() else employee.email
+        email_body = render_to_string('emails/reactivation_email.html', {
+            'username': username,
+            'login_link': login_link,
+            'year': now().year,
+        })
 
-    email_subject = "Your Tikme Dine Account Has Been Reactivated"
-    email_body = render_to_string('email_templates/reactivation_email.html', {
-        'username': getattr(employee, 'username', employee.email),  # Fallback to email if username doesn't exist
-        'login_link': login_link,
-        'year': now().year,
-    })
-
-    email = EmailMessage(
-        subject=email_subject,
-        body=email_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[employee.email]
-    )
-    email.content_subtype = "html"
-    email.send()
+        # Send email
+        email = EmailMessage(
+            subject=email_subject,
+            body=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email]
+        )
+        email.content_subtype = "html"
+        email.send()
+    except Exception as e:
+        print(f"Error sending reactivation email: {str(e)}")

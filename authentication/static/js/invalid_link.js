@@ -1,34 +1,33 @@
-// Function to get the JWT token from local storage 
-function getToken() {
-    return localStorage.getItem('jwtToken'); // Assuming the JWT is stored in local storage
-}
+// Check the token status and show appropriate alert
+document.addEventListener('DOMContentLoaded', function () {
+    const tokenStatus = document.getElementById('token-status').value; // Pass token status via a hidden input field
 
-// Function to validate the JWT token
-function isTokenValid(token) {
-    if (!token) return false;
-
-    // Decode the payload from the token
-    const payload = JSON.parse(atob(token.split('.')[1])); // Base64 decode the payload
-
-    const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
-
-    // Check if the token is expired
-    return payload.exp > currentTime; // Return true if token is not expired
-}
-
-// Function to handle page load
-function onPageLoad() {
-    const token = getToken();
-
-    // Check if the token is present and valid
-    if (token && isTokenValid(token)) {
-        alert("Your session is still valid.");
-        // Optionally redirect to another page or perform other actions
+    if (tokenStatus === 'used') {
+        Swal.fire({
+            title: 'Link Already Used',
+            text: 'The link you used has already been completed or activated. If you believe this is an error, please contact your system administrator for assistance.',
+            icon: 'warning',
+            confirmButtonText: 'Back to Login'
+        }).then(() => {
+            window.location.href = '/admin_login/';
+        });
+    } else if (tokenStatus === 'invalid') {
+        Swal.fire({
+            title: 'Invalid Link',
+            text: 'The link you used is invalid or expired. Please contact your system administrator for assistance.',
+            icon: 'error',
+            confirmButtonText: 'Back to Login'
+        }).then(() => {
+            window.location.href = '/admin_login/';
+        });
     } else {
-        alert("Your session has expired or you are not logged in. Please log in again.");
-        window.location.href = '/admin_login/'; // Redirect to the login page
+        Swal.fire({
+            title: 'Unknown Error',
+            text: 'An unknown error has occurred. Please try again later.',
+            icon: 'error',
+            confirmButtonText: 'Back to Login'
+        }).then(() => {
+            window.location.href = '/admin_login/';
+        });
     }
-}
-
-// Call onPageLoad when the document is ready
-document.addEventListener('DOMContentLoaded', onPageLoad);
+});

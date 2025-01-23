@@ -1,0 +1,71 @@
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/setup_questions.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <h2 class="form-title">Set Up Security Questions</h2>
+    <p class="instructions">Please type all your answers in lowercase. Answers are case-insensitive.</p>
+    <form method="post" id="security-questions-form">
+        {% csrf_token %}
+        <input type="hidden" name="token" value="{{ token }}">
+        <input type="hidden" name="uidb64" value="{{ uidb64 }}">
+
+        <!-- First Question -->
+        <div class="form-group">
+            <label for="security-question-1">Security Question 1</label>
+            <select name="security_question_1" id="security-question-1" class="form-control" required>
+                <option value="" selected disabled>Choose your first security question</option>
+                {% for question in questions %}
+                    <option value="{{ question.id }}">{{ question.question_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="security-answer-1">Answer</label>
+            <input type="text" name="security_answer_1" id="security-answer-1" class="form-control" placeholder="Type your answer" required>
+        </div>
+
+        <!-- Second Question -->
+        <div class="form-group">
+            <label for="security-question-2">Security Question 2</label>
+            <select name="security_question_2" id="security-question-2" class="form-control" required>
+                <option value="" selected disabled>Choose your second security question</option>
+                {% for question in questions %}
+                    <option value="{{ question.id }}">{{ question.question_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="security-answer-2">Answer</label>
+            <input type="text" name="security_answer_2" id="security-answer-2" class="form-control" placeholder="Type your answer" required>
+        </div>
+
+        <!-- Third Question -->
+        <div class="form-group">
+            <label for="security-question-3">Security Question 3</label>
+            <select name="security_question_3" id="security-question-3" class="form-control" required>
+                <option value="" selected disabled>Choose your third security question</option>
+                {% for question in questions %}
+                    <option value="{{ question.id }}">{{ question.question_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="security-answer-3">Answer</label>
+            <input type="text" name="security_answer_3" id="security-answer-3" class="form-control" placeholder="Type your answer" required>
+        </div>
+
+        <p id="error-message" class="error-message d-none">Please choose unique questions and provide all answers.</p>
+        <button type="submit" class="btn-submit">Submit</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/setup_questions.js' %}"></script>
+{% endblock %}

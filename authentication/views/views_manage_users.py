@@ -2,6 +2,9 @@ from rest_framework.response import Response
 from rest_framework import status, views
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
+from django.utils.http import urlsafe_base64_decode
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from ..models import *
 from ..serializers import *
@@ -114,11 +117,11 @@ class AddUserView(views.APIView):
             payload = validate_token(request)
             current_user = get_object_or_404(User, id=payload['id'])
 
-            # Permissions check
+            # Permissions check for System Admin
             if current_user.role.role_name == 'System Admin' and request.data.get('role') not in ['Manager', 'Employee']:
                 return Response({'error': 'System Admin can only add Manager or Employee roles.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Fetch related objects
+            # Fetch related objects by name
             role_name = request.data.get('role', '').strip()
             role = Role.objects.filter(role_name__iexact=role_name).first()
             if not role:
@@ -126,12 +129,18 @@ class AddUserView(views.APIView):
 
             module_name = request.data.get('module', '').strip()
             module = Module.objects.filter(module_name__iexact=module_name).first() if module_name else None
+            if module_name and not module:
+                return Response({'error': f'Module "{module_name}" does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
             job_title_name = request.data.get('job_title', '').strip()
             job_title = JobTitle.objects.filter(title_name__iexact=job_title_name).first() if job_title_name else None
+            if job_title_name and not job_title:
+                return Response({'error': f'Job title "{job_title_name}" does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Default status
             status_obj = Status.objects.get_or_create(status_name='Pending')[0]
 
+            # Create user
             data = {
                 "employee_number": request.data.get("employee_number"),
                 "first_name": request.data.get("first_name"),
@@ -147,6 +156,7 @@ class AddUserView(views.APIView):
             serializer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         except serializers.ValidationError as e:
             return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -156,34 +166,53 @@ class EditUserView(views.APIView):
     """
     Handles editing an existing user.
     """
+
     def get(self, request, pk):
+        """
+        Retrieves user details for editing.
+        """
         try:
             user = get_object_or_404(User, pk=pk)
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     def put(self, request, pk):
-            try:
-                payload = validate_token(request)
-                user = get_object_or_404(User, id=pk)
+        try:
+            payload = validate_token(request)
+            user = get_object_or_404(User, id=pk)
 
-                # Ensure proper role and module logic
-                if 'role' in request.data:
-                    if request.data['role'] == "Super Admin" and User.objects.filter(role__role_name="Super Admin").exclude(id=pk).exists():
-                        return Response({"error": "Only one Super Admin is allowed."}, status=status.HTTP_400_BAD_REQUEST)
+            # Validate if `employee_number` or `email` are being updated
+            employee_number = request.data.get("employee_number")
+            email = request.data.get("email")
 
-                serializer = UserSerializer(user, data=request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                updated_user = serializer.save()
+            if employee_number and employee_number != user.employee_number:
+                if User.objects.filter(employee_number=employee_number).exclude(id=pk).exists():
+                    return Response(
+                        {"error": "A user with this employee number already exists."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-                return Response(UserSerializer(updated_user).data, status=status.HTTP_200_OK)
-            except JobTitle.DoesNotExist:
-                return Response({"error": "The provided job title does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            if email and email != user.email:
+                if User.objects.filter(email=email).exclude(id=pk).exists():
+                    return Response(
+                        {"error": "A user with this email already exists."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            updated_user = serializer.save()
+
+            return Response(UserSerializer(updated_user).data, status=status.HTTP_200_OK)
+
+        except serializers.ValidationError as e:
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        
 class DeleteUserView(views.APIView):
     """
     Handles deleting a user.
@@ -246,9 +275,7 @@ class EmailActionsView(views.APIView):
     """
     Handles sending email actions based on user status and permissions.
     """
-
     def post(self, request, pk):
-        # Validate JWT token
         payload = validate_token(request)
         current_user = get_object_or_404(User, id=payload['id'])
 
@@ -264,12 +291,11 @@ class EmailActionsView(views.APIView):
         if email_type not in ['onboarding', 'locked', 'reactivation']:
             return Response({'error': 'Invalid email type.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Handle email actions
         try:
             if email_type == "onboarding" and target_user.status.status_name == "Pending":
                 send_onboarding_email(request, target_user)
                 message = f"Onboarding email sent to {target_user.email}."
-            elif email_type == "locked" and target_user.status.status_name in ["Inactive", "Suspended"]:
+            elif email_type == "locked" and target_user.status.status_name == "Inactive":
                 send_locked_email(target_user)
                 message = f"Locked email sent to {target_user.email}."
             elif email_type == "reactivation" and target_user.status.status_name == "Suspended":
@@ -279,6 +305,6 @@ class EmailActionsView(views.APIView):
                 return Response({'error': 'Invalid email action for the user\'s status.'}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({'message': message}, status=status.HTTP_200_OK)
-
         except Exception as e:
             return Response({'error': f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

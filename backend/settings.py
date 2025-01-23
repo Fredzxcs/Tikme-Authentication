@@ -18,9 +18,9 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://reservations.example.com/dashboard/')
+RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://192.168.1.82:8003/')
 LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
-FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboard/')
+FINANCE_URL = config('FINANCE_URL', default='http://192.168.1.24:8005/')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
@@ -53,8 +53,8 @@ LOGGING = {
 
 # JWT Settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=24),
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
