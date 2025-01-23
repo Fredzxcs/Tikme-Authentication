@@ -18,9 +18,9 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://192.168.1.82:8003/')
-LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
-FINANCE_URL = config('FINANCE_URL', default='http://192.168.1.24:8005/')
+RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://reservation.193.203.161.247.nip.io/')
+LOGISTICS_URL = config('LOGISTICS_URL', default='http://logistic.193.203.161.247.nip.io/')
+FINANCE_URL = config('FINANCE_URL', default='http://finance.193.203.161.247.nip.io/')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'corsheaders',
+    
 ]
 
 
@@ -94,7 +94,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+
 ]
 
 REST_FRAMEWORK = {
@@ -107,11 +107,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "https://reservations.myapp.com",
-    "https://logistics.myapp.com",
-    "https://finance.myapp.com",
-]
+
 
 ROOT_URLCONF = 'backend.urls'
 
