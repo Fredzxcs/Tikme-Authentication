@@ -26,6 +26,23 @@ def validate_token(request):
 
     return payload
 
+def get_users_by_role(user):
+    """
+    Determines the users and roles accessible based on the authenticated user's role.
+    """
+    if not user.role:  # Ensure the user has a role assigned
+        raise PermissionDenied('Your account does not have an assigned role.')
+
+    if user.role.role_name == 'Super Admin':
+        roles = ['Super Admin', 'System Admin', 'Manager', 'Employee']
+        users = User.objects.all()
+    elif user.role.role_name == 'System Admin':
+        roles = ['Manager', 'Employee']
+        users = User.objects.filter(role__role_name__in=roles)
+    else:
+        raise PermissionDenied('You do not have permission to access this page.')
+
+    return users, roles
 
 class JobTitleListCreateView(views.APIView):
     """

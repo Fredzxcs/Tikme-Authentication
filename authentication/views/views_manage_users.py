@@ -162,39 +162,57 @@ class AddUserView(views.APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class EditUserView(views.APIView):
     """
     Handles editing an existing user.
     """
+
     def get(self, request, pk):
+        """
+        Retrieves user details for editing.
+        """
         try:
             user = get_object_or_404(User, pk=pk)
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     def put(self, request, pk):
-            try:
-                payload = validate_token(request)
-                user = get_object_or_404(User, id=pk)
+        try:
+            payload = validate_token(request)
+            user = get_object_or_404(User, id=pk)
 
-                # Ensure proper role and module logic
-                if 'role' in request.data:
-                    if request.data['role'] == "Super Admin" and User.objects.filter(role__role_name="Super Admin").exclude(id=pk).exists():
-                        return Response({"error": "Only one Super Admin is allowed."}, status=status.HTTP_400_BAD_REQUEST)
+            # Validate if `employee_number` or `email` are being updated
+            employee_number = request.data.get("employee_number")
+            email = request.data.get("email")
 
-                serializer = UserSerializer(user, data=request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                updated_user = serializer.save()
+            if employee_number and employee_number != user.employee_number:
+                if User.objects.filter(employee_number=employee_number).exclude(id=pk).exists():
+                    return Response(
+                        {"error": "A user with this employee number already exists."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-                return Response(UserSerializer(updated_user).data, status=status.HTTP_200_OK)
-            except JobTitle.DoesNotExist:
-                return Response({"error": "The provided job title does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            if email and email != user.email:
+                if User.objects.filter(email=email).exclude(id=pk).exists():
+                    return Response(
+                        {"error": "A user with this email already exists."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            updated_user = serializer.save()
+
+            return Response(UserSerializer(updated_user).data, status=status.HTTP_200_OK)
+
+        except serializers.ValidationError as e:
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        
 class DeleteUserView(views.APIView):
     """
     Handles deleting a user.

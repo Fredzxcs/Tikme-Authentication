@@ -20,9 +20,9 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(','
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://192.168.100.7:8003/')
+RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://192.168.1.82:8003/')
 LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
-FINANCE_URL = config('FINANCE_URL', default='https://finance.example.com/dashboard/')
+FINANCE_URL = config('FINANCE_URL', default='http://192.168.1.24:8005/')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5

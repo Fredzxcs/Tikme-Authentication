@@ -43,14 +43,8 @@ class Role(models.Model):
         return self.role_name
 
 
-class Status(models.Model):
-    STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
-        ('suspended', 'Suspended'),
-    )
-    status_name = models.CharField(max_length=50, unique=True, choices=STATUS_CHOICES)
+class Status(models.Model): 
+    status_name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.status_name

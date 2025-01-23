@@ -8,11 +8,20 @@ urlpatterns = [
     path('logout/', views_auth.LogoutView.as_view(), name='logout'),
 
     # System Admin Dashboard
+    path('super_admin_dashboard/', views_dashboard.SystemAdminDashboardView.as_view(), name='super_admin_dashboard'),
     path('system_admin_dashboard/', views_dashboard.SystemAdminDashboardView.as_view(), name='system_admin_dashboard'),
-    
     path('tech_support/', views_emails.TechSupportView.as_view(), name='tech_support'),
-    path("forgot_password/", views_emails.ForgotPasswordView.as_view(), name="forgot_password"),
+
+    # Forgot Password
+    path('forgot_password/', views_forgot_password.ForgotPasswordView.as_view(), name='forgot_password'),
+    # Reset Password - Setup Questions
+    path('forgot-setup-questions/<str:uidb64>/<str:token>/', views_forgot_password.ForgotSetupQuestionsView.as_view(), name='forgot_setup_questions'),
+    # Reset Password - Setup Password
+    path('reset-password/<str:uidb64>/<str:token>/change-password/', views_forgot_password.ForgotSetupPasswordView.as_view(), name='forgot_setup_password'),
+    # Reset Password Direct
     
+    path('validate-password/', views_forgot_password.validate_password, name='validate_password'),
+
     path('send-email/<int:employee_id>/onboarding/', views_emails.SendOnboardingEmailView.as_view(), name='send_onboarding_email'),
     path('send-email/<int:employee_id>/locked/', views_emails.SendLockedEmailView.as_view(), name='send_locked_email'),
     path('send-email/<int:employee_id>/reactivation/', views_emails.SendReactivationEmailView.as_view(), name='send_reactivation_email'),

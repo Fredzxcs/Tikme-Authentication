@@ -122,7 +122,7 @@ class LoginView(views.APIView):
 
     def get_redirection_url(self, user, token):
         if user.is_superuser:
-            return '/system_admin_dashboard/'
+            return '/super_admin_dashboard/'
         elif user.role and user.role.role_name == "System Admin":
             return '/system_admin_dashboard/'
         elif user.module and user.module.module_name == 'Reservations':
@@ -181,7 +181,7 @@ class LogoutView(views.APIView):
         response.data = {
             'message': 'success'
         }
-        return response
+        return render(request, "admin_login.html")
 
 
 class UnauthorizedAccessView(views.APIView):

@@ -39,6 +39,15 @@ function validateSecurityAnswers(questions, answers) {
     return true;
 }
 
+// Automatically convert input to lowercase as the user types
+function enforceLowercaseInput() {
+    document.querySelectorAll('input[name^="security_answer"]').forEach(input => {
+        input.addEventListener('input', function () {
+            this.value = this.value.toLowerCase(); // Convert input to lowercase in real-time
+        });
+    });
+}
+
 // Handle form submission for security questions
 async function submitSecurityAnswers(event) {
     event.preventDefault();
@@ -52,7 +61,7 @@ async function submitSecurityAnswers(event) {
     ).map(field => field.value);
     const answers = Array.from(
         form.querySelectorAll('input[name^="security_answer"]')
-    ).map(input => input.value);
+    ).map(input => input.value.trim().toLowerCase()); // Convert answers to lowercase
 
     if (!validateSecurityAnswers(questions, answers)) return;
 
@@ -132,3 +141,6 @@ document.querySelectorAll('select[name^="security_question"]').forEach(select =>
         }
     });
 });
+
+// Enforce lowercase input
+enforceLowercaseInput();

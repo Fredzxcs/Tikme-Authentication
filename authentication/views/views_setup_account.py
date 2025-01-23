@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlsafe_base64_decode
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import AccessToken, TokenError, RefreshToken
-from ..models import User, SecurityQuestion, SecurityAnswer
-from ..serializers import SecurityQuestionSerializer, SecurityAnswerSerializer, SetupPasswordSerializer
+from ..models import *
+from ..serializers import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,10 @@ class SetupAccountView(views.APIView):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = get_object_or_404(User, pk=uid)
+
+            # Check if the user has already completed the setup
+            if user.status == "active":  # Assuming 'active' means account setup is complete
+                return render(request, 'invalid_link.html', {'token_status': 'used'}, status=200)
 
             # Validate Access Token
             try:
@@ -62,7 +66,7 @@ class SetupAccountView(views.APIView):
 
         except Exception as e:
             logger.exception(f"Error in SetupAccountView GET: {str(e)}")
-            return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+            return render(request, 'invalid_link.html', {'token_status': 'invalid'}, status=400)
 
     def post(self, request, uidb64, token):
         try:
@@ -74,7 +78,7 @@ class SetupAccountView(views.APIView):
                 AccessToken(token)
             except TokenError as e:
                 logger.warning(f"Access token invalid: {str(e)}")
-                return Response({"error": "Invalid or expired token. Please refresh your token."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"error": "Invalid or expired token."}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Validate and save security answers
             answers_data = request.data.get('answers', [])
@@ -93,6 +97,10 @@ class SetupAccountView(views.APIView):
                 answer_text = answer_data.get('answer')
                 question = get_object_or_404(SecurityQuestion, id=question_id)
 
+                # Enforce lowercase on answers only
+                answer_text = answer_data.get('answer').strip().lower()  # Convert to lowercase
+                question = get_object_or_404(SecurityQuestion, id=question_id)
+
                 # Prevent duplicate entries with update_or_create
                 SecurityAnswer.objects.update_or_create(
                     user=user,
@@ -103,13 +111,23 @@ class SetupAccountView(views.APIView):
             if errors:
                 return Response({"message": "Partial success.", "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Mark user as "active" by updating the status field
+            active_status = Status.objects.get(status_name="Active")  # Ensure 'name' exists in the Status model
+            user.status = active_status
+            user.save()
+
             # Clear temporary storage and return success
             clear_temp_questions(uid)
             return Response({"message": "Security questions saved successfully."}, status=status.HTTP_200_OK)
 
+        except Status.DoesNotExist:
+            logger.error("Active status not found in the database.")
+            return Response({"error": "Active status is not configured in the system."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         except Exception as e:
             logger.exception(f"Error in SetupAccountView POST: {str(e)}")
             return Response({"error": "An error occurred while saving your answers."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # Refresh Token View
@@ -169,29 +187,34 @@ class SetupPasswordView(views.APIView):
             return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, uidb64, token):
-        try:
-            uid = urlsafe_base64_decode(uidb64).decode()
-            user = get_object_or_404(User, pk=uid)
-            
-            # Validate Access Token
             try:
-                AccessToken(token)
-            except TokenError as e:
-                logger.warning(f"Access token invalid: {str(e)}")
-                return Response({"error": "Invalid or expired token."}, status=status.HTTP_401_UNAUTHORIZED)
+                uid = urlsafe_base64_decode(uidb64).decode()
+                user = get_object_or_404(User, pk=uid)
+                
+                # Validate Access Token
+                try:
+                    AccessToken(token)
+                except TokenError as e:
+                    logger.warning(f"Access token invalid: {str(e)}")
+                    return Response({"error": "Invalid or expired token."}, status=status.HTTP_401_UNAUTHORIZED)
 
-            serializer = SetupPasswordSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(user=user)  # Pass the user instance here
+                serializer = SetupPasswordSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(user=user)  # Pass the user instance here
 
-                # Update user status to Active
-                user.status = "Active"  # Make sure the status field is correct
-                user.save()  # Save the updated user object
+                    # Update user status to Active
+                    active_status = Status.objects.get(status_name="Active")  # Ensure 'name' exists in the Status model
+                    user.status = active_status
+                    user.save()
 
-                return Response({"message": "Password set successfully."}, status=status.HTTP_200_OK)
+                    return Response({"message": "Password set successfully."}, status=status.HTTP_200_OK)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        except Exception as e:
-            logger.exception(f"Error in SetupPasswordView POST: {str(e)}")
-            return Response({"error": "An error occurred while setting your password."}, status=status.HTTP_400_BAD_REQUEST)
+            except Status.DoesNotExist:
+                logger.error("Active status not found in the database.")
+                return Response({"error": "Active status is not configured in the system."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            except Exception as e:
+                logger.exception(f"Error in SetupPasswordView POST: {str(e)}")
+                return Response({"error": "An error occurred while setting your password."}, status=status.HTTP_400_BAD_REQUEST)

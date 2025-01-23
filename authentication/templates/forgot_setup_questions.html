@@ -1,0 +1,49 @@
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/setup_questions.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <h2 class="form-title">Answer Your Security Questions</h2>
+    <p class="instructions">Please type all your answers in lowercase. Answers are case-insensitive.</p>
+    <form method="post" id="forgot-security-questions-form">
+        {% csrf_token %}
+        <input type="hidden" name="token" value="{{ token }}">
+        <input type="hidden" name="uidb64" value="{{ uidb64 }}">
+
+        <!-- First Question -->
+        <div class="form-group">
+            <label for="security-question-1">Security Question 1</label>
+            <p class="question-text" id="security-question-1">{{ question_1.question_text }}</p>
+            <input type="hidden" name="question_id_1" value="{{ question_1.id }}">
+            <input type="text" name="security_answer_1" id="security-answer-1" class="form-control" placeholder="Type your answer" required>
+        </div>
+
+        <!-- Second Question -->
+        <div class="form-group">
+            <label for="security-question-2">Security Question 2</label>
+            <p class="question-text" id="security-question-2">{{ question_2.question_text }}</p>
+            <input type="hidden" name="question_id_2" value="{{ question_2.id }}">
+            <input type="text" name="security_answer_2" id="security-answer-2" class="form-control" placeholder="Type your answer" required>
+        </div>
+
+        <!-- Third Question -->
+        <div class="form-group">
+            <label for="security-question-3">Security Question 3</label>
+            <p class="question-text" id="security-question-3">{{ question_3.question_text }}</p>
+            <input type="hidden" name="question_id_3" value="{{ question_3.id }}">
+            <input type="text" name="security_answer_3" id="security-answer-3" class="form-control" placeholder="Type your answer" required>
+        </div>
+
+        <p id="error-message" class="error-message d-none">Please answer all questions.</p>
+        <button type="submit" class="btn-submit">Submit</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/forgot_setup_questions.js' %}"></script>
+{% endblock %}

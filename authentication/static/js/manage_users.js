@@ -17,17 +17,24 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // Fetch roles and exclude "Super Admin" if it already exists
     async function fetchRoles() {
         try {
             const response = await fetch("/roles/");
             if (!response.ok) throw new Error("Failed to fetch roles.");
             const roles = await response.json();
-
+    
+            // Debugging: Log roles
+            console.log("Fetched Roles:", roles);
+    
             // Check if "Super Admin" already exists in the user table
-            const hasSuperAdmin = Array.from(userTableBody.querySelectorAll("td"))
-                .some(td => td.textContent.trim() === "Super Admin");
-
+            const hasSuperAdmin = Array.from(userTableBody.querySelectorAll("tr")).some(tr => {
+                const roleCell = tr.querySelector("td:nth-child(7)"); // Assuming role is in the 7th column
+                console.log("Checking role:", roleCell?.textContent.trim()); // Debugging
+                return roleCell && roleCell.textContent.trim() === "Super Admin";
+            });
+    
+            console.log("Super Admin exists:", hasSuperAdmin);
+    
             roleSelect.innerHTML = `<option value="">Select Role</option>`;
             roles.forEach(role => {
                 if (role.role_name !== "Super Admin" || !hasSuperAdmin) {
@@ -39,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showAlert("error", "Error", "Failed to fetch roles.");
         }
     }
+    
 
     // Generic function to fetch data for dropdowns
     async function fetchData(url, selectElement, placeholder, nameField) {
@@ -133,10 +141,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (selectedRole === "System Admin") {
             moduleGroup.style.display = "none";
             moduleSelect.value = "";
-        } else if (selectedRole === "Manager") {
+        } else if (selectedRole === "Manager" || selectedRole === "Employee") {
             moduleGroup.style.display = "block";
         } else {
-            moduleGroup.style.display = "none";
+            moduleGroup.style.display = "none"; 
             moduleSelect.value = "";
         }
     }
@@ -323,3 +331,4 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchData("/job-titles/", jobTitleSelect, "Select Job Title", "title_name");
     fetchUsers();
 });
+    

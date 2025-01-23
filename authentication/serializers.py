@@ -77,8 +77,6 @@ class SetupPasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password1'])
         user.save()
 
-
-
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(slug_field='role_name', queryset=Role.objects.all())
     module = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -139,6 +137,21 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
+        # Check for duplicate employee_number only if it is being updated
+        if 'employee_number' in validated_data:
+            employee_number = validated_data['employee_number']
+            if employee_number != instance.employee_number:
+                if User.objects.filter(employee_number=employee_number).exclude(id=instance.id).exists():
+                    raise serializers.ValidationError({'employee_number': 'User with this employee number already exists.'})
+
+        # Check for duplicate email only if it is being updated
+        if 'email' in validated_data:
+            email = validated_data['email']
+            if email != instance.email:
+                if User.objects.filter(email=email).exclude(id=instance.id).exists():
+                    raise serializers.ValidationError({'email': 'User with this email already exists.'})
+
+        # Handle module and job title updates
         module_name = validated_data.pop('module', None)
         job_title_name = validated_data.pop('job_title', None)
 
@@ -156,3 +169,4 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+

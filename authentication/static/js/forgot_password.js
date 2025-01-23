@@ -8,6 +8,24 @@ document.addEventListener("DOMContentLoaded", function () {
         return regex.test(email);
     }
 
+    // Function to handle cooldown messages
+    function handleCooldown(response) {
+        if (response.error && response.error.includes("wait")) {
+            const minutesRemaining = response.error.match(/\d+/)[0];
+            Swal.fire({
+                icon: "info",
+                title: "Cooldown in Effect",
+                text: `You need to wait ${minutesRemaining} minute(s) before requesting another reset link.`,
+            });
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: response.error || "Failed to send the reset link. Please try again.",
+            });
+        }
+    }
+
     // Form submission event listener
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
@@ -55,12 +73,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                 form.reset();
             } else {
-                // Display error message from server
-                await Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: result.error || "Failed to send the reset link. Please try again.",
-                });
+                // Handle cooldown or other errors
+                handleCooldown(result);
             }
         } catch (error) {
             // Handle network or unexpected errors

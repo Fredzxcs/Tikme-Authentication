@@ -67,6 +67,53 @@ def send_forgot_password_email(user_name, email, reset_link):
         logger.error(f"Error sending email to {email}: {str(e)}")
         raise e
 
+def send_temp_locked_email(employee):
+    """
+    Sends an email notification for temporary account lock.
+    """
+    try:
+        subject = "Your Tikme Dine Account is Temporarily Locked"
+        body = render_to_string("emails/temp_locked_email.html", {
+            "username": employee.get_full_name() or employee.email,
+            "unlock_time": employee.locked_until,
+            "year": now().year,
+        })
+        email_message = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email],
+        )
+        email_message.content_subtype = "html"
+        email_message.send()
+        logger.info(f"Temporary lock email sent to {employee.email}")
+    except Exception as e:
+        logger.error(f"Error sending temporary lock email: {str(e)}")
+        raise e
+
+
+def send_permanent_locked_email(employee):
+    """
+    Sends an email notification for permanent account lock.
+    """
+    try:
+        subject = "Your Tikme Dine Account is Permanently Locked"
+        body = render_to_string("emails/permanent_locked_email.html", {
+            "username": employee.get_full_name() or employee.email,
+            "year": now().year,
+        })
+        email_message = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.email],
+        )
+        email_message.content_subtype = "html"
+        email_message.send()
+        logger.info(f"Permanent lock email sent to {employee.email}")
+    except Exception as e:
+        logger.error(f"Error sending permanent lock email: {str(e)}")
+        raise e
 
 
 def send_onboarding_email(request, employee):
