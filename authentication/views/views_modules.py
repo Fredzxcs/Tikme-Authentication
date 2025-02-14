@@ -1,5 +1,4 @@
 from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework import status, views
 from django.shortcuts import render, get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied

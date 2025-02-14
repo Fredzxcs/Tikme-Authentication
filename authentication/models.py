@@ -1,12 +1,14 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 from .managers import UserManager
 from django.conf import settings
-
+import uuid
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-    employee_number = models.CharField(max_length=255, unique=True)
+    employee_number = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
 
     # Relationships
     status = models.ForeignKey(
@@ -14,7 +16,7 @@ class User(AbstractUser):
     )
     role = models.ForeignKey(
         'Role', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
-    )  # Fixed `on_delete` to SET_NULL for consistency
+    )
     module = models.ForeignKey(
         'Module', on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
     )
@@ -29,19 +31,26 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    def __str__(self):
-        return f"{self.employee_number} - {self.first_name} {self.last_name}"
+    def save(self, *args, **kwargs):
+        """ Auto-assign employee number when creating a new user """
+        if not self.employee_number:
+            if self.role and self.role.role_name == "Super Admin":
+                self.employee_number = self.objects.generate_super_admin_code()
+            else:
+                role_name = self.role.role_name if self.role else None
+                self.employee_number = self.objects.generate_employee_number(role_name, self.module)
+        super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"{self.employee_number} - {self.first_name} {self.last_name} - {self.email}"
+
+    class Meta:
+        db_table = "authentication_user"  # Avoid conflicts with Django’s auth_user
 
 class Role(models.Model):
     role_name = models.CharField(max_length=50, unique=True)
-    permissions = models.ManyToManyField(
-        'Permission', related_name="roles", blank=True
-    )
-
     def __str__(self):
         return self.role_name
-
 
 class Status(models.Model): 
     status_name = models.CharField(max_length=50, unique=True)
@@ -49,13 +58,11 @@ class Status(models.Model):
     def __str__(self):
         return self.status_name
 
-
 class SecurityQuestion(models.Model):
     question_text = models.CharField(max_length=255)
 
     def __str__(self):
         return self.question_text
-
 
 class SecurityAnswer(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="security_answers")
@@ -70,7 +77,6 @@ class SecurityAnswer(models.Model):
     def __str__(self):
         return f"{self.user.employee_number} - {self.question.question_text}"
 
-
 class Module(models.Model):
     module_name = models.CharField(max_length=50, unique=True)
 
@@ -78,20 +84,16 @@ class Module(models.Model):
         return self.module_name
 
 
-class Permission(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-
 class JobTitle(models.Model):
     title_name = models.CharField(max_length=255, unique=True)
+    permissions = models.ManyToManyField(
+        Permission,  # ✅ Explicitly reference Django's built-in Permission model
+        related_name="job_titles",
+        blank=True
+    )  
 
     def __str__(self):
         return self.title_name
-
 
 class Token(models.Model):
     user = models.ForeignKey(
@@ -99,8 +101,18 @@ class Token(models.Model):
         on_delete=models.CASCADE,
         related_name="tokens"
     )
-    key = models.CharField(max_length=255, unique=True)
+    key = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Token for {self.user.employee_number}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message
+    

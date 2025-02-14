@@ -207,3 +207,71 @@ def send_reactivation_email(employee):
         email.send()
     except Exception as e:
         print(f"Error sending reactivation email: {str(e)}")
+
+def send_email_change_notification(employee, old_email):
+    """
+    Sends an email notification to the old email when a user updates their email.
+    """
+    try:
+        subject = "Security Alert: Email Change Requested"
+        body = render_to_string("emails/email_change_notification.html", {
+            "username": employee.get_full_name() if employee.get_full_name() else employee.email,
+            "old_email": old_email,
+            "new_email": employee.pending_email,
+            "year": now().year,
+        })
+
+        email = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[old_email],
+        )
+        email.content_subtype = "html"  # Set email type to HTML
+        email.send()
+        logger.info(f"Security email change notification sent to {old_email}")
+
+    except Exception as e:
+        logger.error(f"Error sending email change notification: {str(e)}")
+        raise e
+
+
+def send_email_verification(employee, request):
+    """
+    Sends a verification email when a user updates their email.
+    """
+    try:
+        # Generate a unique verification token
+        verification_token = get_random_string(length=32)
+        employee.email_verification_token = verification_token
+        employee.save()
+
+        # Generate verification link
+        verification_link = request.build_absolute_uri(
+            reverse("verify-email", kwargs={"token": verification_token})
+        )
+
+        # Email content
+        subject = "Verify Your New Email Address"
+        body = render_to_string('emails/verification_email.html', {
+            'username': employee.get_full_name() if employee.get_full_name() else employee.email,
+            'verification_link': verification_link,
+            'year': now().year,
+        })
+
+        # Send email
+        email = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[employee.pending_email],
+        )
+        email.content_subtype = "html"
+        email.send()
+
+        logger.info(f"Verification email sent to {employee.pending_email}")
+
+    except Exception as e:
+        logger.error(f"Error sending verification email: {str(e)}")
+        raise e
+

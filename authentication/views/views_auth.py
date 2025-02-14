@@ -1,70 +1,15 @@
 from rest_framework.response import Response
-from django.http import JsonResponse
 from django.conf import settings
-from rest_framework.permissions import AllowAny
-from rest_framework.exceptions import AuthenticationFailed, NotFound
-from rest_framework import status, views
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import views
 from django.shortcuts import render
-from ..models import User
-from ..serializers import UserSerializer
-import jwt, datetime
-import logging
+from ..models import *
+from ..serializers import *
+import jwt, datetime, logging
+
 
 logger = logging.getLogger(__name__)
-
-
-# Register User View
-class RegisterView(views.APIView):
-    """
-    Handles user registration
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return JsonResponse(serializer.data, safe=False)
-
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        if 'password' in serializer.validated_data:
-            user.set_password(serializer.validated_data['password'])  # Hash password
-            user.save()
-        return JsonResponse(serializer.data)
-
-
-# User Read, Update, Delete View
-class RegisterViewRUD(views.APIView):
-    """
-    Handles retrieve, update, and delete operations for users
-    """
-    def get_object(self, pk):
-        try:
-            return User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            raise NotFound(detail="User not found", code=404)
-
-    def put(self, request, pk):
-        user = self.get_object(pk)
-        serializer = UserSerializer(user, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return JsonResponse(serializer.data)
-
-    def patch(self, request, pk):
-        user = self.get_object(pk)
-        serializer = UserSerializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return JsonResponse(serializer.data)
-
-    def delete(self, request, pk):
-        user = self.get_object(pk)
-        user.delete()
-        return JsonResponse({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-
 
 # Landing Page View
 class LandingPageView(views.APIView):
@@ -190,3 +135,15 @@ class UnauthorizedAccessView(views.APIView):
     """
     def get(self, request):
         return render(request, 'unauthorized_access.html')
+    
+
+class NotificationView(views.APIView):
+
+    def get(self, request):
+        # Get notifications related to the logged-in user
+        user = request.user  
+        notifications = Notification.objects.filter(user=user, is_read=False).order_by('-created_at')
+        
+        # Render the notifications in the template
+        return render(request, 'super_admin_sidebar.html', {'notifications': notifications})
+    

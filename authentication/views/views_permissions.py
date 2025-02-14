@@ -6,22 +6,20 @@ from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.conf import settings
 from ..models import *
 from ..serializers import *
-import jwt
+import jwt, json
 import logging
 
 logger = logging.getLogger(__name__)
 
 # Utility Functions
 def validate_token(request):
-    """
-    Validate the JWT token and return the decoded payload.
-    """
     token = request.COOKIES.get('jwt')
     if not token:
         raise AuthenticationFailed('Unauthorized: No token provided.')
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        logger.info(f"✅ Token Decoded: User ID {payload.get('id')}")
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed('Token has expired.')
     except jwt.InvalidTokenError:
@@ -30,42 +28,29 @@ def validate_token(request):
     return payload
 
 
-def get_users_by_role(user):
+def get_user_permissions(user):
     """
-    Determines the users and roles accessible based on the authenticated user's role.
+    Determines the permissions based on the authenticated user's role.
     """
-    if not user.role:  # Ensure the user has a role assigned
+    if not user.role:
         raise PermissionDenied('Your account does not have an assigned role.')
 
     if user.role.role_name == 'Super Admin':
-        roles = ['Super Admin', 'System Admin', 'Manager', 'Employee']
-        users = User.objects.all()
+        return True
     elif user.role.role_name == 'System Admin':
-        roles = ['Manager', 'Employee']
-        users = User.objects.filter(role__role_name__in=roles)
-    else:
-        raise PermissionDenied('You do not have permission to access this page.')
+        return True
+    return False
 
-    return users, roles
-
-
-# Views
 class PermissionListCreateView(views.APIView):
     """
     Handles listing, creating permissions, and rendering the HTML template.
     """
-    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]  # Order matters here!
+    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]  
 
     def get(self, request, *args, **kwargs):
         # Validate and authenticate user
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
-
-        # Check role-based access
-        try:
-            get_users_by_role(user)
-        except PermissionDenied as e:
-            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
 
         permissions = Permission.objects.all()
         permission_serializer = PermissionSerializer(permissions, many=True)
@@ -86,22 +71,37 @@ class PermissionListCreateView(views.APIView):
         return Response(permission_serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        # Validate and authenticate user
-        payload = validate_token(request)
-        user = get_object_or_404(User, id=payload['id'])
+        try:
+            payload = validate_token(request)
+            user = get_object_or_404(User, id=payload['id'])
 
-        # Allow only Super Admins to create permissions
-        if user.role.role_name != "Super Admin":
-            raise PermissionDenied("You do not have permission to create permissions.")
+            # 🔍 Debug: Log request data
+            logger.info(f"Incoming POST request data: {request.data}")
 
-        serializer = PermissionSerializer(data=request.data)
-        if not serializer.is_valid():
-            # Include validation errors in the response
-            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            # 🛠️ Fix: Check if job_title exists before accessing title_name
+            if not user.job_title:
+                logger.error("❌ User does not have a job title assigned.")
+                return Response({"error": "User does not have a job title assigned."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.save()
-        # Explicitly return JSON response
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if user.job_title.title_name != "Super Admin":
+                logger.error("❌ User does not have permission to create permissions.")
+                return Response({"error": "You do not have permission to create permissions."}, status=status.HTTP_403_FORBIDDEN)
+
+            serializer = PermissionSerializer(data=request.data)
+
+            # 🔍 Debug: Check serializer validation
+            if not serializer.is_valid():
+                logger.error(f"❌ Serializer Errors: {serializer.errors}")
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer.save()
+            logger.info(f"✅ Permission created successfully: {serializer.data}")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error(f"❌ Error creating permission: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 
@@ -109,30 +109,21 @@ class PermissionDetailView(views.APIView):
     """
     Handles retrieving, updating, and deleting a single permission.
     """
-    renderer_classes = [JSONRenderer]  # Ensure JSON is used for all methods
+    renderer_classes = [JSONRenderer]  
 
     def get(self, request, pk, *args, **kwargs):
-        # Validate and authenticate user
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
-
-        # Check role-based access
-        try:
-            get_users_by_role(user)
-        except PermissionDenied as e:
-            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
 
         permission = get_object_or_404(Permission, pk=pk)
         serializer = PermissionSerializer(permission)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, *args, **kwargs):
-        # Validate and authenticate user
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
 
-        # Allow only Super Admins to edit permissions
-        if user.role.role_name != "Super Admin":
+        if user.job_title.title_name != "Super Admin":
             raise PermissionDenied("You do not have permission to edit permissions.")
 
         permission = get_object_or_404(Permission, pk=pk)
@@ -142,83 +133,120 @@ class PermissionDetailView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk, *args, **kwargs):
-        # Validate and authenticate user
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
 
-        # Allow only Super Admins to delete permissions
-        if user.role.role_name != "Super Admin":
+        if user.job_title.title_name != "Super Admin":
             raise PermissionDenied("You do not have permission to delete permissions.")
 
         permission = get_object_or_404(Permission, pk=pk)
         permission.delete()
 
-        # Return a JSON response to confirm deletion
         return Response({"message": "Permission deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
-class AssignPermissionToRoleView(views.APIView):
-    """
-    Assigns a permission to a role.
-    """
-    def post(self, request, role_id, *args, **kwargs):
-        # Validate and authenticate user
-        payload = validate_token(request)
-        user = get_object_or_404(User, id=payload['id'])
 
-        # Allow only Super Admins to assign permissions
-        if user.role.role_name != "Super Admin":
-            raise PermissionDenied("Only Super Admin can assign permissions.")
-
-        role = get_object_or_404(Role, id=role_id)
-        permission_id = request.data.get('permission_id')
-        permission = get_object_or_404(Permission, id=permission_id)
-
-        role.permissions.add(permission)
-        return Response(
-            {"message": f"Permission '{permission.name}' assigned to role '{role.role_name}'."},
-            status=status.HTTP_200_OK,
-        )
-    
-class RoleWithPermissionsView(views.APIView):
+class AssignPermissionToJobTitleView(views.APIView):
     """
-    View to fetch roles and their associated permissions.
+    Assigns permissions to a job title.
+    """
+    def post(self, request, job_title_id, *args, **kwargs):
+        try:
+            logger.info(f"📡 Received request to assign permissions to JobTitle ID: {job_title_id}")
+
+            payload = validate_token(request)
+            user = get_object_or_404(User, id=payload['id'])
+
+            # 🛠️ Fix: Ensure the user has a job title
+            if not user.job_title:
+                logger.error("❌ User does not have a job title assigned.")
+                return Response(
+                    {"error": "User does not have a job title assigned."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if user.job_title.title_name != "Super Admin":
+                logger.error("⛔ Unauthorized: Only Super Admin can assign permissions.")
+                return Response({"error": "Only Super Admin can assign permissions."}, status=status.HTTP_403_FORBIDDEN)
+
+            job_title = get_object_or_404(JobTitle, id=job_title_id)
+
+            # ✅ Fix: Ensure request body is valid JSON
+            try:
+                request_data = json.loads(request.body)
+            except json.JSONDecodeError:
+                logger.error("❌ Invalid JSON format received.")
+                return Response({"error": "Invalid JSON format"}, status=status.HTTP_400_BAD_REQUEST)
+
+            permission_ids = request_data.get('permission_ids', [])
+            if not isinstance(permission_ids, list):  # ✅ Validate type
+                logger.error("❌ permission_ids should be a list.")
+                return Response({"error": "Expected a list of permission IDs."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not permission_ids:
+                logger.error("⚠️ No permissions provided.")
+                return Response({"error": "No permissions provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+            permissions = Permission.objects.filter(id__in=permission_ids)
+            if not permissions.exists():
+                logger.error(f"❌ Invalid permissions provided: {permission_ids}")
+                return Response({"error": "Invalid permissions provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+            job_title.permissions.add(*permissions)  # ✅ Assign multiple permissions
+            logger.info(f"✅ Successfully assigned {permissions.count()} permissions to '{job_title.title_name}'")
+
+            return Response(
+                {"message": f"Permissions assigned successfully to '{job_title.title_name}'."},
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            logger.error(f"❌ Critical error assigning permissions: {str(e)}", exc_info=True)
+            return Response({"error": "Internal Server Error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class JobTitleWithPermissionsView(views.APIView):
+    """
+    View to fetch job titles and their associated permissions.
     """
     def get(self, request, *args, **kwargs):
-        # Validate and authenticate user
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
 
-        # Allow only authorized users
-        try:
-            get_users_by_role(user)
-        except PermissionDenied as e:
-            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
-
-        roles = Role.objects.prefetch_related('permissions').all()
+        job_titles = JobTitle.objects.prefetch_related('permissions').all()
         data = [
             {
-                "role_name": role.role_name,
-                "permissions": [permission.name for permission in role.permissions.all()]
+                "title_name": job_title.title_name,
+                "permissions": [permission.name for permission in job_title.permissions.all()]
             }
-            for role in roles
+            for job_title in job_titles
         ]
         return Response(data, status=status.HTTP_200_OK)
 
 
-class RoleListView(views.APIView):
+class JobTitleListView(views.APIView):
     """
-    Handles listing all roles.
+    Handles listing all job titles.
     """
     def get(self, request, *args, **kwargs):
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
 
-        # Check role-based access
-        try:
-            get_users_by_role(user)
-        except PermissionDenied as e:
-            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+        job_titles = JobTitle.objects.all()
+        serializer = JobTitleSerializer(job_titles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        roles = Role.objects.all()
-        serializer = RoleSerializer(roles, many=True)
+class JobTitlePermissionsView(views.APIView):
+    """
+    API to fetch permissions assigned to a specific job title.
+    """
+    def get(self, request, job_title_id, *args, **kwargs):
+        job_title = get_object_or_404(JobTitle, id=job_title_id)
+
+        # Ensure JobTitle has a ManyToMany relationship with Permission
+        permissions = job_title.permissions.all()
+        
+        if not permissions.exists():
+            return Response({"message": "No permissions found for this job title."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PermissionSerializer(permissions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

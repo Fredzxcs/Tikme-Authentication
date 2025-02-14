@@ -4,7 +4,7 @@ body, html {
     justify-content: center;
     align-items: center;
     background-color: #f8f9fa;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 .container {
     max-width: 600px;

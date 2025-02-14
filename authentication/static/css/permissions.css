@@ -1,188 +1,296 @@
-/* General Styling */
+/* 🌟 General Styling */
 body {
-    background-color: #f9f9f9;
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #343a40;
+    margin-top: 50px;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
 }
 
-/* Container Styling */
-.container {
-    padding: 40px;
+/* 🌟 Align Main Content with Sidebar */
+.dashboard {
+    margin-left: 260px;
+    padding: 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+nav.close ~ .dashboard {
+    margin-left: 90px;
+    width: calc(100% - 90px);
+}
+
+/* 🌟 Permissions Management Container */
+.permissions-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: auto;
     background-color: #ffffff;
+    padding: 25px;
     border-radius: 12px;
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
-    max-width: 1100px;
-    width: 90%;
-    margin: 40px auto; /* Center container */
 }
 
-/* Page Title */
-h1 {
-    font-size: 32px;
-    color: #4a5568;
-    margin-bottom: 30px;
+/* 🌟 Section Title */
+h2 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #6f42c1;
     text-align: center;
+    margin-bottom: 25px;
 }
 
-/* Permissions Layout */
-.permissions-content {
+/* 🌟 Permissions Main Layout */
+.permissions-main {
     display: flex;
     justify-content: space-between;
     gap: 20px;
-    flex-wrap: wrap;
+    width: 100%;
 }
 
-/* Permissions Table */
+/* 🌟 Permissions Table */
 .permissions-table {
-    flex: 3;
+    flex: 2;
     padding: 20px;
-    background-color: #f8fafc;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌟 Scrollable Permissions Table */
+.permissions-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
 }
 
-/* Table Styling */
+/* 🌟 Table Styling */
 .table {
-    border-collapse: collapse;
     width: 100%;
-    margin-bottom: 20px;
+    border-collapse: collapse;
 }
 
-.table-striped thead {
-    background-color: #5a00e8; /* Purple header */
+.table thead th {
+    background-color: #6f42c1;
     color: #ffffff;
-}
-
-.table-striped th,
-.table-striped td {
-    padding: 12px 15px;
+    padding: 14px;
+    font-size: 15px;
     text-align: left;
 }
 
-.table-striped tr {
-    background-color: #f8f9fa;
-    transition: background-color 0.3s ease;
+/* 🌟 Adjust Column Width */
+.table th:first-child,
+.table td:first-child {
+    width: 10%;
+    text-align: center;
 }
 
-.table-striped tr:hover {
-    background-color: #edf2f7;
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 70%;
+    text-align: left;
 }
 
-.table-striped th {
-    font-size: 16px;
-    text-transform: uppercase;
+.table th:last-child,
+.table td:last-child {
+    width: 20%;
+    text-align: center;
 }
 
-/* Permissions Form */
-.permissions-form {
-    flex: 1;
-    padding: 30px;
-    background-color: #edf2f7;
-    border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-}
-
-h3 {
-    margin-bottom: 20px;
-    color: #4a5568;
-    font-size: 24px;
-}
-
-/* Form Group */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    font-size: 16px;
-    font-weight: bold;
-    color: #4a5568;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px 16px;
+/* 🌟 Table Row Styling */
+.table tbody td {
+    padding: 5px;
+    font-size: 15px;
     border: 1px solid #e2e8f0;
-    border-radius: 5px;
-    font-size: 16px;
-    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.form-control:focus {
-    border-color: #5a00e8;
-    outline: none;
-    box-shadow: 0px 0px 5px rgba(90, 0, 232, 0.5);
+.table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
 }
 
-/* Button Styling */
+.table tbody tr:hover {
+    background-color: #edf2f7;
+}
+
+/* 🌟 Buttons */
 .btn {
-    font-size: 14px;
-    padding: 10px 15px;
+    font-size: 10px;
+    padding: 10px 16px;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 15px;
 }
 
-/* Edit Button */
-.btn-edit {
-    background-color: #EEB32F; /* Yellow */
-    color: white;
-    border: none;
-}
-
-.btn-edit:hover {
-    background-color: #d9a021; /* Darker yellow */
-}
-
-/* Delete Button */
+/* 🌟 Delete Button */
 .btn-delete {
-    background-color: #FF3131; /* Red */
+    background-color: #ff3131;
     color: white;
+
+    font-size: 14px;
+    padding: 6px 12px;
     border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
 }
 
 .btn-delete:hover {
-    background-color: #e02525; /* Darker red */
+    background-color: #e02525;
 }
 
-/* Save Button */
-.btn-primary {
-    background-color: #5a00e8; /* Purple */
+/* 🌟 Edit Button */
+.btn-edit {
+    background-color: #6f42c1;
     color: white;
+    font-size: 14px;
+    padding: 6px 12px;
     border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
 }
 
-.btn-primary:hover {
-    background-color: #4700c0; /* Darker purple */
+.btn-edit:hover {
+    background-color: #5a00e8;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
+/* 🌟 Right Section */
+.right-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 🌟 Add Permission Form */
+.permissions-form {
+    background-color: #edf2f7;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌟 Job Title Dropdown */
+.job-title-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#job-title-dropdown {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    appearance: none;
+    background: white url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%236f42c1' d='M5 7l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 10px center;
+    background-size: 14px;
+    cursor: pointer;
+}
+
+/* 🌟 Placeholder for Select */
+#job-title-dropdown:invalid {
+    color: #6c757d;
+}
+
+/* 🌟 Job Titles and Their Permissions */
+.job-titles-permissions {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌟 Scrollable Table */
+.job-titles-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+
+/* 🌟 Manage Permissions Section */
+.permissions-selection {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 25px;
+}
+
+/* 🌟 Permissions Selection Layout */
+.permissions-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* 🌟 Available and Chosen Permissions */
+.permissions-column {
+    flex: 1;
+    text-align: center;
+}
+
+/* 🌟 Permissions Actions - Center Alignment */
+.permissions-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center the buttons */
+    justify-content: center;
+    gap: 4px;
+    margin-top: 40px;
+
+}
+
+.input-group {
+    width: 100%;
+}
+
+.input-group-text {
+    background-color: #fff;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+
+
+
+/* 🌟 Responsive Adjustments */
+@media (max-width: 1366px) {
+    .dashboard {
+        margin-left: 250px;
+        width: calc(100% - 250px);
     }
 
-    .permissions-content {
+    .permissions-main {
+        flex-direction: row;
+    }
+
+    .permissions-wrapper {
+        flex-direction: row;
+    }
+}
+
+/* 🌟 Responsive Adjustments for Smaller Screens */
+@media (max-width: 1200px) {
+    .permissions-main,
+    .permissions-wrapper {
         flex-direction: column;
     }
 
     .permissions-table,
-    .permissions-form {
+    .permissions-form,
+    .permissions-column,
+    .job-titles-permissions {
         width: 100%;
-        margin-bottom: 20px;
-    }
-
-    h1 {
-        font-size: 24px;
     }
 }

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.models import Permission
 from .models import *
 
 
@@ -13,25 +14,26 @@ class ModuleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A module with this name already exists.")
         return value
 
-
 class PermissionSerializer(serializers.ModelSerializer):
+    """ ✅ Fetches permissions from Django's auth_permission table """
     class Meta:
-        model = Permission
-        fields = ['id', 'name']
-
+        model = Permission  # ✅ Now using Django's built-in Permission model
+        fields = ['id', 'name', 'codename']  # ✅ Includes codename for better control
 
 class RoleSerializer(serializers.ModelSerializer):
-    permissions = PermissionSerializer(many=True, read_only=True)
-
     class Meta:
         model = Role
-        fields = ['id', 'role_name', 'permissions']
+        fields = ['id', 'role_name']
 
 
 class JobTitleSerializer(serializers.ModelSerializer):
+    permissions = serializers.PrimaryKeyRelatedField(
+        queryset=Permission.objects.all(), many=True
+    )  # ✅ Now correctly fetching from Django's built-in auth_permission table
+
     class Meta:
         model = JobTitle
-        fields = ['id', 'title_name']
+        fields = ['id', 'title_name', 'permissions']
 
 
 class StatusSerializer(serializers.ModelSerializer):
@@ -58,8 +60,6 @@ class SecurityAnswerSerializer(serializers.ModelSerializer):
         if not data.get('answer'):
             raise serializers.ValidationError({"answer": "An answer is required for the security question."})
         return data
-
-
 
 class SetupPasswordSerializer(serializers.Serializer):
     new_password1 = serializers.CharField(write_only=True, required=True)

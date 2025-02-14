@@ -183,25 +183,49 @@ class EditUserView(views.APIView):
             payload = validate_token(request)
             user = get_object_or_404(User, id=pk)
 
-            # Validate if `employee_number` or `email` are being updated
-            employee_number = request.data.get("employee_number")
-            email = request.data.get("email")
+            # Store old values
+            old_employee_number = user.employee_number
+            old_email = user.email
 
-            if employee_number and employee_number != user.employee_number:
-                if User.objects.filter(employee_number=employee_number).exclude(id=pk).exists():
+            # Get new values from request
+            new_employee_number = request.data.get("employee_number", old_employee_number)
+            new_email = request.data.get("email", old_email)
+
+            # Only validate employee_number if changed
+            if new_employee_number and new_employee_number != old_employee_number:
+                if User.objects.filter(employee_number=new_employee_number).exclude(id=pk).exists():
                     return Response(
                         {"error": "A user with this employee number already exists."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+                user.employee_number = new_employee_number  # Update if changed
 
-            if email and email != user.email:
-                if User.objects.filter(email=email).exclude(id=pk).exists():
+            # Only validate email if changed
+            if new_email and new_email != old_email:
+                if User.objects.filter(email=new_email).exclude(id=pk).exists():
                     return Response(
                         {"error": "A user with this email already exists."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            serializer = UserSerializer(user, data=request.data, partial=True)
+                # Update email with verification
+                user.pending_email = new_email
+                user.save()
+                send_email_verification(user, request)
+                send_email_change_notification(user, old_email)
+
+                return Response(
+                    {"message": "A verification email has been sent to your new email. Please confirm the change."},
+                    status=status.HTTP_200_OK,
+                )
+
+            # Exclude email and employee_number from updates if unchanged
+            request_data = request.data.copy()
+            request_data.pop("employee_number", None)
+            request_data.pop("email", None)
+
+            # Save other updates
+            serializer = UserSerializer(user, data=request_data, partial=True)
             serializer.is_valid(raise_exception=True)
             updated_user = serializer.save()
 
@@ -211,7 +235,6 @@ class EditUserView(views.APIView):
             return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
         
 class DeleteUserView(views.APIView):
     """
@@ -308,3 +331,28 @@ class EmailActionsView(views.APIView):
         except Exception as e:
             return Response({'error': f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class VerifyEmailView(views.APIView):
+    """
+    Handles verification of new email addresses.
+    """
+
+    def get(self, request, token):
+        try:
+            user = get_object_or_404(User, email_verification_token=token)
+
+            # Update email only if the token is valid
+            if user.pending_email:
+                user.email = user.pending_email
+                user.pending_email = None
+                user.email_verification_token = None
+                user.save()
+
+                return Response(
+                    {"message": "Your email has been successfully updated."},
+                    status=status.HTTP_200_OK,
+                )
+
+            return Response({"error": "Invalid or expired verification token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
