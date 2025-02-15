@@ -18,9 +18,9 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://reservation.193.203.161.247.nip.io/')
-LOGISTICS_URL = config('LOGISTICS_URL', default='http://logistic.193.203.161.247.nip.io/')
-FINANCE_URL = config('FINANCE_URL', default='http://finance.193.203.161.247.nip.io/')
+RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://capstone-reservation.onrender.com/')
+LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics-5mci.onrender.com/')
+FINANCE_URL = config('FINANCE_URL', default='https://capstone-financemanagement.onrender.com/')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
