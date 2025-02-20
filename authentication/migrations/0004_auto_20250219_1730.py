@@ -14,7 +14,7 @@ def populate_status(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('authentication', '0002_auto_20250122_1606'),  # Update to your last migration
+        ('authentication', '0003_auto_20250219_1729'),  # Update to your last migration
     ]
 
     operations = [

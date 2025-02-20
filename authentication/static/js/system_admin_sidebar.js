@@ -3,24 +3,10 @@ const body = document.querySelector("body"),
       sidebar = body.querySelector("nav");
       sidebarToggle = body.querySelector(".sidebar-toggle");
 
-let getMode = localStorage.getItem("mode");
-if(getMode && getMode ==="dark"){
-    body.classList.toggle("dark");
-}
-
 let getStatus = localStorage.getItem("status");
 if(getStatus && getStatus ==="close"){
     sidebar.classList.toggle("close");
 }
-
-modeToggle.addEventListener("click", () =>{
-    body.classList.toggle("dark");
-    if(body.classList.contains("dark")){
-        localStorage.setItem("mode", "dark");
-    }else{
-        localStorage.setItem("mode", "light");
-    }
-});
 
 sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("close");
@@ -30,7 +16,6 @@ sidebarToggle.addEventListener("click", () => {
         localStorage.setItem("status", "open");
     }
 })
-
 
 // Dropdown Toggle Functionality
 document.addEventListener('DOMContentLoaded', () => {
@@ -63,85 +48,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Dropdown Toggle Functionality for Profile and Notification
+document.addEventListener('DOMContentLoaded', () => {
 
-document.addEventListener("DOMContentLoaded", () => {
-    const sidebarLinks = document.querySelectorAll(".sidebar-link");
-    const breadcrumbList = document.getElementById("breadcrumb-list");
-    const pageContent = document.getElementById("page-content");
+    // Profile Dropdown
+    const profileSection = document.querySelector('.profile-section');
+    const profileDropdown = document.querySelector('.profile-section .dropdown-menu');
+    
+    if (profileSection && profileDropdown) {
+        profileSection.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent the click from propagating to the document
+            profileDropdown.classList.toggle('show'); // Toggle visibility
+        });
 
-    // Helper function to update breadcrumbs
-    function updateBreadcrumbs(pageName) {
-        // Clear existing breadcrumbs (except Home)
-        breadcrumbList.innerHTML = `
-            <li><a href="#" data-page="Home" class="breadcrumb-link">Home</a></li>
-        `;
-        
-        // Add the new breadcrumb
-        breadcrumbList.innerHTML += `
-            <li> &gt; </li>
-            <li>${pageName}</li>
-        `;
+        // Hide the dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileSection.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+        });
     }
 
-    // Event listener for sidebar links
-    sidebarLinks.forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const pageName = link.getAttribute("data-page");
-
-            // Update breadcrumbs
-            updateBreadcrumbs(pageName);
-
-            // Update page content dynamically (optional)
-            pageContent.innerHTML = `
-                <h2>${pageName}</h2>
-                <p>Welcome to the ${pageName} page.</p>
-            `;
-        });
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const profileSection = document.querySelector('.profile-section');
-        const profileDropdown = document.querySelector('.profile-dropdown');
+    // Notification Dropdown
+    const notificationSection = document.querySelector('.notification-section');
+    const notificationDropdown = document.querySelector('.notification-section .dropdown-menu');
     
-        if (profileSection && profileDropdown) {
-            // Toggle dropdown visibility on click
-            profileSection.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the click from propagating to the document
-                profileDropdown.classList.toggle('show');
-            });
-    
-            // Hide dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!profileSection.contains(e.target)) {
-                    profileDropdown.classList.remove('show');
-                }
-            });
-        }
-
-        // Tab switching functionality for main content (Optional)
-        const tabs = document.querySelectorAll('.top .breadcrumbs a');
-        const sections = document.querySelectorAll('.main-content > div');
-
-        tabs.forEach((tab, index) => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Hide all sections
-                sections.forEach(section => section.style.display = 'none');
-                // Show selected section
-                if (sections[index]) {
-                    sections[index].style.display = 'block';
-                }
-            });
+    if (notificationSection && notificationDropdown) {
+        notificationSection.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent the click from propagating to the document
+            notificationDropdown.classList.toggle('show'); // Toggle visibility
         });
 
-        // Ensure only the first section is visible on page load (Optional)
-        sections.forEach((section, index) => {
-            section.style.display = index === 0 ? 'block' : 'none';
+        // Hide the dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!notificationSection.contains(e.target)) {
+                notificationDropdown.classList.remove('show');
+            }
         });
-    });
+    }
 
 });
+
+
 
 
 

@@ -22,21 +22,23 @@ function showSuccess(message, redirectUrl) {
     });
 }
 
-// Helper function to validate security answers
-function validateSecurityAnswers(questions, answers) {
+
+// Helper function to validate security answers **only on submit**
+function validateSecurityAnswersOnSubmit() {
+    const questions = Array.from(document.querySelectorAll('select[name^="security_question"]')).map(select => select.value);
+    const answers = Array.from(document.querySelectorAll('input[name^="security_answer"]')).map(input => input.value.trim().toLowerCase());
+    
     const uniqueQuestions = new Set(questions);
 
     if (questions.length !== uniqueQuestions.size) {
-        showError('Please choose different questions for each field.');
-        return false;
+        return "Please choose different questions for each field.";
     }
 
     if (answers.some(answer => answer.trim() === '')) {
-        showError('Please answer all security questions.');
-        return false;
+        return "Please answer all security questions.";
     }
 
-    return true;
+    return null;  // No errors
 }
 
 // Automatically convert input to lowercase as the user types
@@ -48,22 +50,23 @@ function enforceLowercaseInput() {
     });
 }
 
-// Handle form submission for security questions
+// Handle form submission
 async function submitSecurityAnswers(event) {
-    event.preventDefault();
+    event.preventDefault(); // Prevent default form submission
 
     const form = document.getElementById('security-questions-form');
     const token = form.querySelector('input[name="token"]').value;
     const uidb64 = form.querySelector('input[name="uidb64"]').value;
 
-    const questions = Array.from(
-        form.querySelectorAll('select[name^="security_question"]')
-    ).map(field => field.value);
-    const answers = Array.from(
-        form.querySelectorAll('input[name^="security_answer"]')
-    ).map(input => input.value.trim().toLowerCase()); // Convert answers to lowercase
+    // 🔹 **Run validation only on form submission**
+    const validationError = validateSecurityAnswersOnSubmit();
+    if (validationError) {
+        showError(validationError);
+        return;
+    }
 
-    if (!validateSecurityAnswers(questions, answers)) return;
+    const questions = Array.from(form.querySelectorAll('select[name^="security_question"]')).map(field => field.value);
+    const answers = Array.from(form.querySelectorAll('input[name^="security_answer"]')).map(input => input.value.trim().toLowerCase());
 
     const payload = {
         answers: questions.map((question, index) => ({
@@ -114,10 +117,9 @@ async function submitSecurityAnswers(event) {
     }
 }
 
+
 // Add event listener to the form submission
-document
-    .getElementById('security-questions-form')
-    ?.addEventListener('submit', submitSecurityAnswers);
+document.getElementById('security-questions-form')?.addEventListener('submit', submitSecurityAnswers);
 
 // Real-time input validation for answers
 document.querySelectorAll('input[name^="security_answer"]').forEach(input => {
@@ -128,19 +130,23 @@ document.querySelectorAll('input[name^="security_answer"]').forEach(input => {
     });
 });
 
-// Validate unique question selection
+
+// 🔹 Modify question selection validation
 document.querySelectorAll('select[name^="security_question"]').forEach(select => {
     select.addEventListener('change', () => {
-        const questions = Array.from(
+        const selectedQuestions = Array.from(
             document.querySelectorAll('select[name^="security_question"]')
         ).map(select => select.value);
-        const uniqueQuestions = new Set(questions);
 
-        if (questions.length !== uniqueQuestions.size) {
-            showError('Please choose different questions for each field.');
+        const uniqueQuestions = new Set(selectedQuestions);
+
+        // 🔹 Run validation **only if all fields are selected**
+        if (selectedQuestions.length === uniqueQuestions.size && !selectedQuestions.includes("")) {
+            Swal.close(); // Close any open error messages
         }
     });
 });
+
 
 // Enforce lowercase input
 enforceLowercaseInput();

@@ -18,9 +18,9 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='https://capstone-reservation.onrender.com/')
-LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics-5mci.onrender.com/')
-FINANCE_URL = config('FINANCE_URL', default='https://capstone-financemanagement.onrender.com/')
+RESERVATION_URL = config('RESERVATION_URL', default='https://tikme-reservation.onrender.com/')
+LOGISTIC_URL = config('LOGISTIC_URL', default='https://logistics.example.com/dashboard/')
+FINANCE_URL = config('FINANCE_URL', default='http://192.168.100.31:8005/')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
@@ -107,7 +107,12 @@ REST_FRAMEWORK = {
     ],
 }
 
-
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8003",
+    "http://localhost:8003",
+    "http://192.168.100.31:8003",
+    "http://192.168.100.31:8005",
+]
 
 ROOT_URLCONF = 'backend.urls'
 

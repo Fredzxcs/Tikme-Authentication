@@ -33,18 +33,7 @@
 body{
     min-height: 100vh;
 }
-body.dark{
-    --primary-color: #3A3B3C;
-    --panel-color: #242526;
-    --text-color: #8A2BE2;
-    --black-light-color: #CCC;
-    --border-color: #4D4C4C;
-    --toggle-color: #FFF;
-    --box1-color: #3A3B3C;
-    --box2-color: #3A3B3C;
-    --box3-color: #3A3B3C;
-    --title-icon-color: #CCC;
-}
+
 /* === Custom Scroll Bar CSS === */
 ::-webkit-scrollbar {
     width: 8px;
@@ -57,12 +46,6 @@ body.dark{
     border-radius: 12px;
     transition: all 0.3s ease;
 }
-
-body.dark::-webkit-scrollbar-thumb:hover,
-body.dark .activity-data::-webkit-scrollbar-thumb:hover{
-    background: #3A3B3C;
-}
-
 .dropdown .submenu {
     display: none; /* Initially hidden */
     list-style: none;
@@ -204,9 +187,6 @@ nav .menu-items{
     border-radius: 50%;
     background-color: var(--primary-color);
 }
-body.dark li a:hover:before{
-    background-color: var(--text-color);
-}
 .menu-items li a i{
     font-size: 24px;
     min-width: 45px;
@@ -252,138 +232,6 @@ body.dark .nav-links li a:hover .link-name{
     justify-content: center;
     cursor: pointer;
 }
-.mode-toggle .switch{
-    position: relative;
-    display: inline-block;
-    height: 22px;
-    width: 40px;
-    border-radius: 25px;
-    background-color: var(--toggle-color);
-}
-.switch:before{
-    content: "";
-    position: absolute;
-    left: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 15px;
-    width: 15px;
-    background-color: var(--panel-color);
-    border-radius: 50%;
-    transition: var(--tran-03);
-}
-body.dark .switch:before{
-    left: 20px;
-}
-
-
-.breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 5px; /* Space between breadcrumb items */
-    margin-left: 0; /* Align breadcrumbs close to the toggle */
-    font-size: 14px;
-    color: var(--black-light-color);
-    white-space: nowrap; /* Prevent wrapping */
-}
-
-.breadcrumb-link {
-    text-decoration: none;
-    color: var(--primary-color);
-    font-weight: 500;
-    transition: color var(--tran-03);
-}
-
-.breadcrumb-link:hover {
-    text-decoration: underline;
-    color: var(--text-color);
-}
-
-.breadcrumb-divider {
-    color: var(--black-light-color);
-    font-size: 14px;
-}
-
-.breadcrumb-link.current {
-    color: var(--black-light-color);
-    font-weight: 600; /* Emphasize current page visually */
-    cursor: default;
-}
-
-.top img {
-    margin-left: auto; /* Push the profile image to the far right */
-    width: 40px;
-    border-radius: 50%;
-}
-
-/* Profile Section */
-.profile-section {
-    position: relative;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-/* Profile Image */
-.profile-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    transition: box-shadow 0.3s ease;
-}
-
-.profile-img:hover {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Dropdown Menu */
-.profile-dropdown {
-    display: none; /* Initially hidden */
-    position: absolute;
-    top: calc(100% + 10px); /* Positioned below the profile image */
-    right: 0;
-    background-color: var(--panel-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 150px;
-    z-index: 10;
-    padding: 10px 0;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-/* Show Dropdown When the .show Class Is Applied */
-.profile-dropdown.show {
-    display: block;
-}
-
-/* Dropdown Items */
-.profile-dropdown ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.profile-dropdown ul li {
-    margin: 10px 0;
-    padding: 10px 20px;
-}
-
-.profile-dropdown ul li a {
-    text-decoration: none;
-    color: var(--black-light-color);
-    font-size: 14px;
-    transition: color 0.3s ease, background-color 0.3s ease;
-    display: flex;
-    align-items: center;
-}
-
-.profile-dropdown ul li a:hover {
-    background-color: #f7f7f7;
-    color: var(--primary-color);
-    border-radius: 4px;
-}
 
 /* Main Content Sections */
 .view-profile, .account-settings, .logs {
@@ -411,6 +259,73 @@ h2 {
 .profile-info p {
     margin: 5px 0;
     font-size: 14px;
+}
+
+/* Dropdown Toggle Button */
+.dropdown-toggle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background-color: #6f42c1;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Proper Floating Dropdown */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 8px 0;
+  list-style: none;
+  display: none; /* Initially hidden */
+  z-index: 1050;
+}
+
+/* Ensure Dropdown Stays Visible When Opened */
+.dropdown-menu.show {
+  display: block;
+}
+
+/* Dropdown Items */
+.dropdown-menu .dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: start;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover Effect */
+.dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef;
+  color: #5a00e8;
+}
+
+/* Ensure Dropdown Doesn't Overflow */
+.dropdown-menu.float {
+  right: 0;
+  left: auto;
 }
 
 .update-btn {
@@ -460,29 +375,6 @@ h2 {
 .account-settings button:hover {
     background-color: var(--text-color);
 }
-
-/* Activity Logs */
-.logs table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.logs th, .logs td {
-    text-align: left;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-}
-
-.logs thead {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.logs tbody tr:hover {
-    background-color: var(--box3-color);
-}
-
 nav.close ~ .dashboard{
     left: 73px;
     width: calc(100% - 73px);
@@ -512,7 +404,6 @@ nav.close ~ .dashboard .top{
     cursor: pointer;
     margin-right: 10px;
 }
-
 
 
 @media (max-width: 1000px) {

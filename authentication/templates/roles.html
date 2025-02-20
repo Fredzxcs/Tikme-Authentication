@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/roles.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -11,33 +12,42 @@
 {% elif is_system_admin %}
     {% include 'include/system_admin_sidebar.html' %}
 {% endif %}
-<div class="container">
-    <h1>Roles Management</h1>
-    <div class="roles-content">
-        <div class="roles-table">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Role Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="roles-table-body">
-                    <!-- Dynamic Data -->
-                </tbody>
-            </table>
-        </div>
-        <div class="roles-form">
-            <h4>Add/Edit Role</h4>
-            <form id="add-edit-role-form">
-                <input type="hidden" id="role-id">
-                <div class="form-group">
-                    <label for="role-name">Role Name</label>
-                    <input type="text" id="role-name" class="form-control" placeholder="Enter role name" required>
+
+<div class="dashboard">
+    <div class="container roles-container">
+        <h2 class="text-center">Roles Management</h2>
+        
+        <div class="roles-content">
+            <!-- Roles Table -->
+            <div class="card roles-table">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Role Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roles-table-body">
+                            <!-- Dynamic Data -->
+                        </tbody>
+                    </table>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Role</button>
-            </form>
+            </div>
+
+            <!-- Add/Edit Role Form -->
+            <div class="card roles-form">
+                <h4 class="text-center">Add/Edit Role</h4>
+                <form id="add-edit-role-form">
+                    <input type="hidden" id="role-id">
+                    <div class="form-group">
+                        <label for="role-name">Role Name</label>
+                        <input type="text" id="role-name" class="form-control" placeholder="Enter role name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Role</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -45,6 +55,6 @@
 {% endblock %}
 
 {% block extra_js %}
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/roles.js' %}"></script>
 {% endblock %}

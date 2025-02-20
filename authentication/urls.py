@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import *
 
 urlpatterns = [
@@ -36,10 +38,8 @@ urlpatterns = [
     path('manage-users/<int:pk>/delete/', views_manage_users.DeleteUserView.as_view(), name='delete_user'),
     path('email-actions/<int:pk>/', views_manage_users.EmailActionsView.as_view(), name='email-actions'),
     path('status-actions/<int:pk>/', views_manage_users.StatusActionsView.as_view(), name='status-actions'),
+    path("verify-email/<str:token>/", views_manage_users.VerifyEmailView.as_view(), name="verify-email"),
     
-    # path('status/', views_manage_users.StatusListCreateView.as_view(), name='status-create'),
-    # path('status/<int:pk>/', views_manage_users.StatusDetailView.as_view(), name='status-detail'),
-
     path('job-titles/', views_job_titles.JobTitleListCreateView.as_view(), name='job_titles'),
     path('job-titles/<int:pk>/', views_job_titles.JobTitleDetailView.as_view(), name='job_titles_detail'),
 
@@ -49,13 +49,21 @@ urlpatterns = [
     # Super Admin-Specific Actions
     path('permissions/', views_permissions.PermissionListCreateView.as_view(), name='permissions'),
     path('permissions/<int:pk>/', views_permissions.PermissionDetailView.as_view(), name='permissions-detail'),
-
+    path('job-titles/<int:job_title_id>/assign-permission/', views_permissions.AssignPermissionToJobTitleView.as_view(), name='assign-permission'),
+    path('job-titles-with-permissions/', views_permissions.JobTitleWithPermissionsView.as_view(), name='job-titles-with-permissions'),
+    path('api/job-titles/<int:job_title_id>/permissions/', views_permissions.JobTitlePermissionsView.as_view(), name='job-title-permissions'),
+    path('job-titles/<int:job_title_id>/remove-permission/<int:permission_id>/', views_permissions.RemovePermissionFromJobTitleView.as_view(), name='remove-permission'),
+    path('job-titles/<int:job_title_id>/remove-all-permissions/', views_permissions.RemoveAllPermissionsFromJobTitleView.as_view(), name='remove-all-permissions'),
     path('roles/', views_roles.RoleListCreateView.as_view(), name='roles'),
     path('roles/<int:pk>/', views_roles.RoleDetailView.as_view(), name='roles-detail'),
-    path('roles/<int:role_id>/assign-permission/', views_permissions.AssignPermissionToRoleView.as_view(), name='assign-permission'),
-    path('roles-with-permissions/', views_permissions.RoleWithPermissionsView.as_view(), name='roles-with-permissions'),
 
     path('unauthorized_access/', views_auth.UnauthorizedAccessView.as_view(), name='unauthorized_access'),
-    # Utility and Static Pages
+    path('notifications/', views_auth.NotificationView.as_view(), name='notifications'),
+    path('profile/', views_profile.ProfileView.as_view(), name='profile'),
+    path('account-settings/', views_profile.AccountSettingsView.as_view(), name='account_settings'),
+ 
 ]
 
+# Serve media files in development (only in DEBUG mode)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/job_titles.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -11,38 +12,49 @@
 {% elif is_system_admin %}
     {% include 'include/system_admin_sidebar.html' %}
 {% endif %}
-<div class="container">
-    <h1 class="text-center">Job Title Management</h1>
-    <div class="job-title-content">
-        <div class="job-title-table">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Job Title Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="job-title-table-body">
-                    <!-- Data will be dynamically populated -->
-                </tbody>
-            </table>
-        </div>
-        <div class="job-title-form">
-            <h4>Add/Edit Job Title</h4>
-            <form id="add-edit-job-title-form">
-                <input type="hidden" id="job-title-id">
-                <div class="form-group">
-                    <label for="job-title-name">Job Title Name</label>
-                    <input type="text" id="job-title-name" class="form-control" placeholder="Enter job title name" required>
+
+<div class="dashboard">
+    <div class="container job-title-container">
+        <h2 class="text-center">Job Title Management</h2>
+        <div class="job-title-content">
+            <!-- Job Titles Table -->
+            <div class="card job-title-table">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Job Title Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="job-title-table-body">
+                            <!-- Data will be dynamically populated -->
+                        </tbody>
+                    </table>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Job Title</button>
-            </form>
+            </div>
+
+            <!-- Add/Edit Job Title Form -->
+            <div class="card job-title-form">
+                <h4 class="text-center">Add/Edit Job Title</h4>
+                <form id="add-edit-job-title-form">
+                    {% csrf_token %}
+                    <input type="hidden" id="job-title-id">
+                    <div class="form-group">
+                        <label for="job-title-name">Job Title Name</label>
+                        <input type="text" id="job-title-name" class="form-control" placeholder="Enter job title name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Job Title</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/job_titles.js' %}"></script>
 {% endblock %}

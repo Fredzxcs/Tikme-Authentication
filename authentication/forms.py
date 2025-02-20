@@ -1,5 +1,6 @@
 from django import forms
 from .models import *
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
 from django.conf import settings
@@ -164,3 +165,25 @@ class SetupPasswordForm(forms.Form):
         validate_password(password1)  # Validate password strength
 
         return cleaned_data
+    
+class AccountSettingsForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'profile_picture']
+
+    def clean_profile_picture(self):
+        """
+        Ensure that the uploaded image is of the correct size and type.
+        """
+        profile_picture = self.cleaned_data.get('profile_picture')
+
+        if profile_picture:
+            max_size = 5 * 1024 * 1024  # 5MB max size
+            if profile_picture.size > max_size:
+                raise forms.ValidationError("Profile picture size exceeds the 5MB limit.")
+            
+            allowed_formats = ['image/jpeg', 'image/png']
+            if profile_picture.content_type not in allowed_formats:
+                raise forms.ValidationError("Invalid file type. Allowed types: JPEG, PNG.")
+        
+        return profile_picture

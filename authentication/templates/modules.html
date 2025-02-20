@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/modules.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -11,38 +12,49 @@
 {% elif is_system_admin %}
     {% include 'include/system_admin_sidebar.html' %}
 {% endif %}
-<div class="container">
-    <h1 class="text-center">Modules Management</h1>
-    <div class="modules-content">
-        <div class="modules-table">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Module Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="modules-table-body">
-                    <!-- Data will be dynamically populated -->
-                </tbody>
-            </table>
-        </div>
-        <div class="modules-form">
-            <h4>Add/Edit Module</h4>
-            <form id="add-edit-module-form">
-                <input type="hidden" id="module-id">
-                <div class="form-group">
-                    <label for="module-name">Module Name</label>
-                    <input type="text" id="module-name" class="form-control" placeholder="Enter module name" required>
+
+<div class="dashboard">
+    <div class="container modules-container">
+        <h2 class="text-center">Modules Management</h2>
+        
+        <div class="modules-content">
+            <!-- Modules Table -->
+            <div class="card modules-table">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Module Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modules-table-body">
+                            <!-- Dynamic Data -->
+                        </tbody>
+                    </table>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Module</button>
-            </form>
+            </div>
+
+            <!-- Add/Edit Module Form -->
+            <div class="card modules-form">
+                <h4 class="text-center">Add/Edit Module</h4>
+                <form id="add-edit-module-form">
+                    <input type="hidden" id="module-id">
+                    <div class="form-group">
+                        <label for="module-name">Module Name</label>
+                        <input type="text" id="module-name" class="form-control" placeholder="Enter module name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Module</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/modules.js' %}"></script>
 {% endblock %}

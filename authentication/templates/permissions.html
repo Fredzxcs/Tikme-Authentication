@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/permissions.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -11,68 +12,142 @@
 {% elif is_system_admin %}
     {% include 'include/system_admin_sidebar.html' %}
 {% endif %}
-<div class="container mt-5">
-    <h1 class="text-center">Permissions Management</h1>
-    <div class="row mt-4">
-        <div class="col-8">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Permission Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="permissions-table-body">
-                    <!-- Permissions populated by JS -->
-                </tbody>
-            </table>
-        </div>
-        <div class="col-4">
-            <h4>Add New Permission</h4>
-            <form id="add-permission-form">
-                <div class="form-group">
-                    <label for="permission-name">Permission Name</label>
-                    <input type="text" id="permission-name" class="form-control" placeholder="Enter permission name" required />
+
+<div class="dashboard">
+    <div class="container permissions-container">
+        <h2 class="text-center">Permissions Management</h2>
+
+        <div class="permissions-main">
+            <!-- Permissions Table -->
+            <div class="card permissions-table">
+                <h4 class="text-center">Permissions List</h4>
+                <div class="table-responsive permissions-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Permission Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permissions-table-body">
+                            <!-- Dynamic Data -->
+                        </tbody>
+                    </table>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Add Permission</button>
-            </form>
-        </div>
-    </div>
-    <div class="row mt-4">
-        <div class="col-8">
-            <h4>Assign Permissions to Roles</h4>
-            <form id="assign-permission-form">
-                <div class="form-group">
-                    <label for="roles">Role</label>
-                    <select id="roles" class="form-control" required></select>
+            </div>
+
+            <div class="right-section">
+                <!-- Add Permission Form -->
+                <div class="card permissions-form">
+                    <h4 class="text-center">Add New Permission</h4>
+                    <form id="add-permission-form">
+                        <input type="hidden" id="permission-id">
+                        <div class="form-group">
+                            <label for="permission-name">Permission Name</label>
+                            <input type="text" id="permission-name" class="form-control" placeholder="Enter permission name" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Add Permission</button>
+                    </form>
                 </div>
-                <div class="form-group mt-3">
-                    <label for="permissions">Permission</label>
-                    <select id="permissions" class="form-control" required></select>
+
+                <!-- Job Titles and Their Permissions -->
+                <div class="card job-titles-permissions">
+                    <h4 class="text-center">Job Titles and Their Permissions</h4>
+                    <div class="table-responsive job-titles-scroll">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="job-titles-permissions-table-body">
+                                <!-- Data Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Assign Permission</button>
-            </form>
+            </div>
         </div>
-    </div>
-    <div class="row mt-5">
-        <h4>Roles and Their Permissions</h4>
-        <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Role</th>
-                    <th>Permissions</th>
-                </tr>
-            </thead>
-            <tbody id="roles-permissions-table-body">
-                <!-- Roles and their permissions will be dynamically populated -->
-            </tbody>
-        </table>
+
+        <!-- Manage Permissions Section -->
+        <div class="card permissions-selection">
+            <h4 class="text-center">Manage Permissions</h4>
+
+            <!-- Job Title Selection and Assign Button -->
+            <div class="d-flex align-items-center gap-2 job-title-wrapper">
+                <div class="form-group mb-0">
+                    <label for="job-title-dropdown">Select Job Title to Assign Permissions</label>
+                    <select id="job-title-dropdown" class="form-control">
+                        <option value="" disabled selected>-- Select Job Title --</option>
+                    </select>
+                </div>
+
+                <button id="assign-permissions-btn" class="btn btn-success mt-4">
+                    <i class="fa fa-check"></i> Assign Permissions
+                </button>
+            </div>
+
+            <div class="permissions-wrapper">
+                <!-- Available Permissions -->
+                <div class="permissions-column">
+                    <label>Available Permissions <i class="fa fa-info-circle"></i></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        <input type="text" id="filter-available" class="form-control" placeholder="Search Available Permissions">
+                    </div>
+                    <select id="available-permissions" class="form-control" multiple></select>
+                    <button id="choose-all" class="btn btn-primary">Choose all</button>
+                </div>
+
+                <div class="permissions-actions">
+                    <button id="move-right" class="btn btn-secondary"><i class="fa fa-arrow-right"></i></button>
+                    <button id="move-left" class="btn btn-secondary"><i class="fa fa-arrow-left"></i></button>
+                </div>
+
+                <!-- Chosen Permissions -->
+                <div class="permissions-column">
+                    <label>Chosen Permissions <i class="fa fa-info-circle"></i></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        <input type="text" id="filter-chosen" class="form-control" placeholder="Search Chosen Permissions">
+                    </div>      
+                    <select id="chosen-permissions" class="form-control" multiple></select>
+                    <button id="remove-all" class="btn btn-danger">Remove all</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Permissions Modal (Fixed Bootstrap 5) -->
+        <div id="permissionsModal" class="modal fade" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="fa fa-lock"></i> Assigned Permissions</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="permissions-container">
+                            <ul id="permissionsList" class="permissions-grid"></ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="remove-all-permissions" class="btn btn-danger">
+                            <i class="fa fa-trash"></i> Remove All
+                        </button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/permissions.js' %}"></script>
 {% endblock %}
