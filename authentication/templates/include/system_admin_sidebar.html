@@ -1,9 +1,11 @@
+
 {% load static %}
+
 
 <!--begin: Sidebar Navigation-->
 <nav class="sidebar-nav"> <!--begin: Logo Section-->
 	<div class="logo-name">
-		<span class="logo_name">Reservation</span>
+		<span class="logo_name">Authentication</span>
 	</div>
 	<!--end: Logo Section-->
 
@@ -12,59 +14,34 @@
 		<ul class="nav-links">
 
 			<li class="dropdown">
-				<a href="{% url 'manage-users' %}" class="{% if 'manage-users' in request.path %}active{% endif %}">
-					<i class="uil uil-estate"></i>
-					<span class="link-name">Dashboard</span>
+				<a href="{% url 'manage_users' %}" class="{% if 'manage_users' in request.path %}active{% endif %}">
+					<i class="uil uil-user-plus"></i>
+					<span class="link-name">Manage Users</span>
 				</a>
 			</li>
 
 
 			<li class="dropdown">
-				<a href="{% url 'job-titles' %}" class="{% if 'job-titles' in request.path %}active{% endif %}">
-					<i class="uil uil-utensils-alt"></i>
-					<span class="link-name">Dine-In Overview</span>
+				<a href="{% url 'job_titles' %}" class="{% if 'job_titles' in request.path %}active{% endif %}">
+					<i class="uil uil-briefcase"></i>
+					<span class="link-name">Job Titles</span>
 				</a>
 			</li>
 
 			<li class="dropdown">
 				<a href="{% url 'roles' %}" class="{% if 'roles' in request.path %}active{% endif %}">
-					<i class="uil uil-schedule"></i>
-					<span class="link-name">Event Overview</span>
+					<i class="uil uil-users-alt"></i>
+					<span class="link-name">Roles</span>
 				</a>
 			</li>	
 
 
 			<li class="dropdown">
 				<a href="{% url 'modules' %}" class="{% if 'modules' in request.path %}active{% endif %}">
-					<i class="uil uil-history"></i>
-					<span class="link-name">History</span>
+					<i class="uil uil-cube"></i>
+					<span class="link-name">Modules</span>
 				</a>
 			</li>
-
-			<!--begin: Logout and Dark Mode-->
-			<ul class="logout-mode mt-auto">
-				<!--begin: Logout-->
-				<li>
-					<a href="#">
-						<i class="uil uil-signout"></i>
-						<span class="link-name">Logout</span>
-					</a>
-				</li>
-				<!--end: Logout-->
-
-				<!--begin: Dark Mode-->
-				<li class="mode">
-					<a href="#">
-						<i class="uil uil-moon"></i>
-						<span class="link-name">Dark Mode</span>
-					</a>
-					<div class="mode-toggle">
-						<span class="switch"></span>
-					</div>
-				</li>
-				<!--end: Dark Mode-->
-			</ul>
-			<!--end: Logout and Dark Mode-->
 		</ul>
 	</div>
 	<!--end: Sidebar Menu-->
@@ -73,34 +50,65 @@
 
 <!--begin: Main Dashboard Section-->
 <section class="dashboard">
-	<!--begin: Top Section-->
-	<div class="top">
-		<i class="uil uil-bars sidebar-toggle"></i>
-		<!--begin: Profile and Notification Section-->
-		<div class="top-right-section d-flex align-items-center" style="position: relative;">
-			<!-- Notification Icon -->
-			<!-- <div class="notification-section me-3 position-relative">
-				<i class="uil uil-bell notification-icon" style="font-size: 1.5rem; cursor: pointer" data-bs-toggle="dropdown"></i>
-				<span class="notification-badge badge bg-danger" style="position: absolute; top: -5px; right: -10px; font-size: 0.75rem">5</span>
-			</div> -->
+    <!--begin: Top Section-->
+    <div class="top">
+        <!-- Sidebar Toggle Icon -->
+        <i class="uil uil-bars sidebar-toggle"></i>
+        
+        <!--begin: Profile and Notification Section-->
+        <div class="top-right-section d-flex align-items-center" style="position: relative; margin-left: auto; padding-right: 120px;">
 
-			<!-- Profile Section -->
-			<!-- <div class="profile-section dropdown">
-				<img
-					src="{% static 'images/profile.png' %}"
-					alt="Profile"
-					class="profile-img rounded-circle"
-					style="width: 40px; height: 40px; cursor: pointer"
-					data-bs-toggle="dropdown" />
-				<ul class="dropdown-menu dropdown-menu-end">
-					<li><a href="#" class="dropdown-item">View Profile</a></li>
-					<li><a href="#" class="dropdown-item">Account Settings</a></li>
-					<li><a href="#" class="dropdown-item">Activity Logs</a></li>
+            <!-- Notification Section -->
+            <div class="notification-section me-3 position-relative" style="margin-right: 30px;">
+                <!-- Notification Icon with Badge -->
+                <i class="uil uil-bell notification-icon" style="font-size: 1.5rem; cursor: pointer" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                <!-- Notification Badge - Dynamically rendered -->
+                <span class="notification-badge badge bg-danger" id="notification-badge" style="position: absolute; top: -5px; right: -10px; font-size: 0.75rem">
+                    {{ notifications|length }} <!-- Display number of unread notifications -->
+                </span>
+                <!-- Notification Dropdown Menu -->
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                            <li><a class="dropdown-item" href="#">{{ notification.message }}</a></li>
+                        {% endfor %}
+                    {% else %}
+                        <li><a class="dropdown-item" href="#">No new notifications</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Profile Section with Dropdown -->
+            <div class="profile-section dropdown">
+                <!-- Profile Icon using FontAwesome -->
+                <i class="uil uil-user-circle profile-icon" style="font-size: 30px; cursor: pointer; color: #333;" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                
+				<!-- Profile Dropdown Menu -->
+				<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+					<li>
+						<a href="{% url 'profile' %}" class="dropdown-item">
+							<i class="uil uil-user"></i> View Profile
+						</a>
+					</li>
+					<li>
+						<a href="{% url 'account_settings' %}" class="dropdown-item">
+							<i class="uil uil-setting"></i> Account Settings
+						</a>
+					</li>
+					<li>
+						<a href="{% url 'admin_login' %}" class="dropdown-item">
+							<i class="uil uil-signout"></i> Logout
+						</a>
+					</li>
 				</ul>
-			</div> -->
-		</div>
-		<!--end: Profile and Notification Section-->
-		<!--end: Main Dashboard Section-->
-	</div>
+				
+            </div>
+        </div>
+        <!--end: Profile and Notification Section-->
+    </div>
+    <!--end: Top Section-->
 </section>
+<!--end: Main Dashboard Section-->
+
+
 

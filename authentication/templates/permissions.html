@@ -77,7 +77,6 @@
 
             <!-- Job Title Selection and Assign Button -->
             <div class="d-flex align-items-center gap-2 job-title-wrapper">
-                <!-- Job Title Dropdown -->
                 <div class="form-group mb-0">
                     <label for="job-title-dropdown">Select Job Title to Assign Permissions</label>
                     <select id="job-title-dropdown" class="form-control">
@@ -85,12 +84,10 @@
                     </select>
                 </div>
 
-                <!-- Assign Button -->
                 <button id="assign-permissions-btn" class="btn btn-success mt-4">
                     <i class="fa fa-check"></i> Assign Permissions
                 </button>
             </div>
-
 
             <div class="permissions-wrapper">
                 <!-- Available Permissions -->
@@ -100,13 +97,10 @@
                         <span class="input-group-text"><i class="fa fa-search"></i></span>
                         <input type="text" id="filter-available" class="form-control" placeholder="Search Available Permissions">
                     </div>
-                    <select id="available-permissions" class="form-control" multiple>
-                        <!-- Options will be populated dynamically -->
-                    </select>
+                    <select id="available-permissions" class="form-control" multiple></select>
                     <button id="choose-all" class="btn btn-primary">Choose all</button>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="permissions-actions">
                     <button id="move-right" class="btn btn-secondary"><i class="fa fa-arrow-right"></i></button>
                     <button id="move-left" class="btn btn-secondary"><i class="fa fa-arrow-left"></i></button>
@@ -119,10 +113,31 @@
                         <span class="input-group-text"><i class="fa fa-search"></i></span>
                         <input type="text" id="filter-chosen" class="form-control" placeholder="Search Chosen Permissions">
                     </div>      
-                    <select id="chosen-permissions" class="form-control" multiple>
-                        <!-- Data populated via JavaScript -->
-                    </select>
+                    <select id="chosen-permissions" class="form-control" multiple></select>
                     <button id="remove-all" class="btn btn-danger">Remove all</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Permissions Modal (Fixed Bootstrap 5) -->
+        <div id="permissionsModal" class="modal fade" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="fa fa-lock"></i> Assigned Permissions</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="permissions-container">
+                            <ul id="permissionsList" class="permissions-grid"></ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="remove-all-permissions" class="btn btn-danger">
+                            <i class="fa fa-trash"></i> Remove All
+                        </button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
                 </div>
             </div>
         </div>

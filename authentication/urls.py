@@ -52,7 +52,8 @@ urlpatterns = [
     path('job-titles/<int:job_title_id>/assign-permission/', views_permissions.AssignPermissionToJobTitleView.as_view(), name='assign-permission'),
     path('job-titles-with-permissions/', views_permissions.JobTitleWithPermissionsView.as_view(), name='job-titles-with-permissions'),
     path('api/job-titles/<int:job_title_id>/permissions/', views_permissions.JobTitlePermissionsView.as_view(), name='job-title-permissions'),
-
+    path('job-titles/<int:job_title_id>/remove-permission/<int:permission_id>/', views_permissions.RemovePermissionFromJobTitleView.as_view(), name='remove-permission'),
+    path('job-titles/<int:job_title_id>/remove-all-permissions/', views_permissions.RemoveAllPermissionsFromJobTitleView.as_view(), name='remove-all-permissions'),
     path('roles/', views_roles.RoleListCreateView.as_view(), name='roles'),
     path('roles/<int:pk>/', views_roles.RoleDetailView.as_view(), name='roles-detail'),
 

@@ -70,10 +70,10 @@ class LoginView(views.APIView):
             return '/super_admin_dashboard/'
         elif user.role and user.role.role_name == "System Admin":
             return '/system_admin_dashboard/'
-        elif user.module and user.module.module_name == 'Reservations':
-            return f"{settings.RESERVATIONS_URL}?token={token}"
-        elif user.module and user.module.module_name == 'Logistics':
-            return f"{settings.LOGISTICS_URL}?token={token}"
+        elif user.module and user.module.module_name == 'Reservation':
+            return f"{settings.RESERVATION_URL}?token={token}"
+        elif user.module and user.module.module_name == 'Logistic':
+            return f"{settings.LOGISTIC_URL}?token={token}"
         elif user.module and user.module.module_name == 'Finance':
             return f"{settings.FINANCE_URL}?token={token}"
         return '/unauthorized_access/'

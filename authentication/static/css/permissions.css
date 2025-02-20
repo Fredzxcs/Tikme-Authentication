@@ -262,6 +262,47 @@ h2 {
 }
 
 
+.permissions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+    max-height: 300px; /* Set max height for scrollbar */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    padding-right: 5px; /* Adjust padding to avoid cut-off */
+}
+
+/* Optional: Add scrollbar styling for better visibility */
+.permissions-grid::-webkit-scrollbar {
+    width: 6px; /* Adjust scrollbar width */
+}
+
+.permissions-grid::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar */
+    border-radius: 4px; /* Rounded scrollbar */
+}
+
+.permissions-grid::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker on hover */
+}
+
+.permissions-grid li {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    width: calc(50% - 10px); /* Two-column layout */
+}
+
+@media (max-width: 600px) {
+    .permissions-grid li {
+        width: 100%; /* Full width on mobile */
+    }
+}
 
 
 /* 🌟 Responsive Adjustments */

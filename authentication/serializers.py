@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from django.utils.text import slugify 
 from django.contrib.auth.models import Permission
 from .models import *
-
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,9 +16,25 @@ class ModuleSerializer(serializers.ModelSerializer):
 
 class PermissionSerializer(serializers.ModelSerializer):
     """ ✅ Fetches permissions from Django's auth_permission table """
+
     class Meta:
-        model = Permission  # ✅ Now using Django's built-in Permission model
-        fields = ['id', 'name', 'codename']  # ✅ Includes codename for better control
+        model = Permission  # ✅ Using Django's built-in Permission model
+        fields = ["id", "name", "codename", "content_type"]  # ✅ Includes codename for better control
+        extra_kwargs = {"content_type": {"read_only": True}}  # ✅ Prevents modification of content_type
+
+    def validate(self, data):
+        """
+        ✅ Auto-generate `codename` if not provided.
+        ✅ Ensures unique permission name.
+        """
+        if not data.get("codename"):
+            data["codename"] = slugify(data["name"])  # Convert name to lowercase with hyphens
+
+        if Permission.objects.filter(name=data["name"]).exists():
+            raise serializers.ValidationError({"name": "Permission with this name already exists."})
+
+        return data
+
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:

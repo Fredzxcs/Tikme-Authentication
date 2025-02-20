@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from .managers import UserManager
 from django.conf import settings
@@ -32,23 +33,31 @@ class User(AbstractUser):
     objects = UserManager()
 
     def save(self, *args, **kwargs):
-        """ Auto-assign employee number when creating a new user """
+        # ✅ Ensure job_title is always assigned for Super Admins
+        if not self.job_title and self.role and self.role.role_name == "Super Admin":
+            super_admin_title, created = JobTitle.objects.get_or_create(title_name="Super Admin")
+            if not self.job_title == super_admin_title:  # ✅ Prevent infinite loop
+                self.job_title = super_admin_title
+
+        # ✅ Auto-generate employee number (Ensure these methods exist in UserManager)
         if not self.employee_number:
             if self.role and self.role.role_name == "Super Admin":
-                self.employee_number = self.objects.generate_super_admin_code()
+                self.employee_number = self.objects.generate_super_admin_code()  # Ensure this method exists
             else:
                 role_name = self.role.role_name if self.role else None
-                self.employee_number = self.objects.generate_employee_number(role_name, self.module)
+                self.employee_number = self.objects.generate_employee_number(role_name, self.module)  # Ensure this method exists
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.employee_number} - {self.first_name} {self.last_name} - {self.email}"
 
     class Meta:
-        db_table = "authentication_user"  # Avoid conflicts with Django’s auth_user
+        db_table = "authentication_user"  # ✅ Avoid conflicts with Django’s auth_user
 
 class Role(models.Model):
     role_name = models.CharField(max_length=50, unique=True)
+
     def __str__(self):
         return self.role_name
 
@@ -83,17 +92,17 @@ class Module(models.Model):
     def __str__(self):
         return self.module_name
 
-
 class JobTitle(models.Model):
     title_name = models.CharField(max_length=255, unique=True)
     permissions = models.ManyToManyField(
-        Permission,  # ✅ Explicitly reference Django's built-in Permission model
+        Permission,  # ✅ Use Django's built-in Permission model
         related_name="job_titles",
         blank=True
     )  
 
     def __str__(self):
         return self.title_name
+
 
 class Token(models.Model):
     user = models.ForeignKey(
@@ -115,4 +124,3 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message
-    

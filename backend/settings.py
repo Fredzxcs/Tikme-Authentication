@@ -20,9 +20,9 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(','
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATIONS_URL = config('RESERVATIONS_URL', default='http://192.168.1.84:8003/')
-LOGISTICS_URL = config('LOGISTICS_URL', default='https://logistics.example.com/dashboard/')
-FINANCE_URL = config('FINANCE_URL', default='http://192.168.1.24:8005/')
+RESERVATION_URL = config('RESERVATION_URL', default='https://tikme-reservation.onrender.com/')
+LOGISTIC_URL = config('LOGISTIC_URL', default='https://logistics.example.com/dashboard/')
+FINANCE_URL = config('FINANCE_URL', default='http://192.168.100.31:8005/')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
@@ -110,13 +110,10 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "https://reservations.myapp.com",
-    "https://logistics.myapp.com",
-    "https://finance.myapp.com",
-
     "http://127.0.0.1:8003",
     "http://localhost:8003",
-    "http://192.168.1.84:8003",
+    "http://192.168.100.31:8003",
+    "http://192.168.100.31:8005",
 ]
 
 ROOT_URLCONF = 'backend.urls'

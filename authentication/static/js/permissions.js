@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const removeAllBtn = document.getElementById("remove-all");
     const jobTitleDropdown = document.getElementById("job-title-dropdown");
     const assignPermissionsBtn = document.getElementById("assign-permissions-btn");
-    
+  
     // ✅ Select Filter Inputs
     const filterAvailableInput = document.getElementById("filter-available");
     const filterChosenInput = document.getElementById("filter-chosen");
@@ -42,18 +42,88 @@ document.addEventListener("DOMContentLoaded", () => {
         Swal.fire({ icon, title, text });
     };
 
-    // ✅ Fetch and Populate Permissions Table
+    // ✅ Fix: Show Modal Properly Without Accessibility Issues
+    const showModalSafely = () => {
+        const modal = document.getElementById("permissionsModal");
+
+        if (!modal) {
+            console.error("❌ Error: Modal element not found.");
+            return;
+        }
+
+        // ✅ Remove aria-hidden before showing
+        modal.removeAttribute("aria-hidden");
+
+        // ✅ Show modal using Bootstrap
+        $("#permissionsModal").modal("show");
+
+        // ✅ Wait for modal transition, then set focus
+        setTimeout(() => {
+            const closeButton = modal.querySelector(".btn-secondary");
+            if (closeButton) {
+                closeButton.focus(); // Set focus on close button (or any safe element inside modal)
+            }
+        }, 300); // Adjust timing based on animation speed
+    };
+
+    // ✅ Add Permission Form Submission Handling
+    if (addPermissionForm) {
+        addPermissionForm.addEventListener("submit", async (event) => {
+            event.preventDefault(); // ✅ Prevent default form submission
+
+            const permissionName = permissionNameInput.value.trim(); // ✅ Get input value
+
+            if (!permissionName) {
+                showAlert("warning", "Validation Error", "Permission name cannot be empty.");
+                return;
+            }
+
+            try {
+                console.log(`📡 Adding new permission: ${permissionName}`);
+
+                const response = await fetch("/permissions/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCSRFToken(),
+                    },
+                    body: JSON.stringify({ name: permissionName }), // ✅ Send the permission name
+                });
+
+                if (response.ok) {
+                    showAlert("success", "Success", "Permission added successfully!");
+                    permissionNameInput.value = ""; // ✅ Clear input field
+                    fetchPermissions(); // ✅ Refresh the permissions table
+                } else {
+                    showAlert("error", "Error", "Failed to add permission.");
+                }
+            } catch (error) {
+                console.error("❌ Error adding permission:", error);
+                showAlert("error", "Error", "An unexpected error occurred.");
+            }
+        });
+    } else {
+        console.error("❌ Error: addPermissionForm not found in the DOM.");
+    }
+
     const fetchPermissions = async () => {
         try {
+            console.log("📡 Fetching permissions...");
+    
             const response = await fetch("/permissions/");
-            if (!response.ok) throw new Error("Failed to fetch permissions");
-            const permissions = await response.json();
-
+            const text = await response.text(); // Read response text
+            console.log("📡 Raw Permissions Response:", text);
+    
+            if (!response.ok) throw new Error(`Failed to fetch permissions: ${text}`);
+    
+            const permissions = JSON.parse(text);
+    
+            // ✅ Clear previous content
             permissionsTableBody.innerHTML = "";
-            availablePermissions.innerHTML = ""; // Clear available permissions dropdown
-            updatePermissionsUI(permissions);
-
+            availablePermissions.innerHTML = "";
+    
             permissions.forEach((permission, index) => {
+                // ✅ Populate the permissions table
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
@@ -65,21 +135,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         </td>
                     </tr>
                 `;
-                permissionsTableBody.innerHTML += row;
-
-                // Populate Available Permissions Dropdown
+                permissionsTableBody.insertAdjacentHTML("beforeend", row);
+    
+                // ✅ Populate the available permissions dropdown
                 let option = document.createElement("option");
                 option.value = permission.id;
                 option.textContent = permission.name;
                 availablePermissions.appendChild(option);
             });
-
-            attachDeleteHandlers();
+    
+            attachDeleteHandlers(); // ✅ Ensure delete handlers are re-attached
+            console.log("✅ Permissions populated successfully!");
+    
         } catch (error) {
             console.error("❌ Error fetching permissions:", error);
-            showAlert("error", "Error", "Failed to fetch permissions.");
+            showAlert("error", "Error", "Failed to load permissions.");
         }
     };
+    
 
     // ✅ Fetch and Populate Job Titles
     const fetchJobTitles = async () => {
@@ -175,19 +248,63 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // ✅ Attach View Handlers
+    // ✅ Function to Display Assigned Permissions in Modal
+    const displayAssignedPermissions = (permissions, jobTitleId) => {
+        const permissionsList = document.getElementById("permissionsList");
+        permissionsList.innerHTML = ""; // Clear previous content
+
+        if (!permissions || permissions.length === 0) {
+            Swal.fire({
+                icon: "info",
+                title: "No Permissions Assigned",
+                text: "This job title has no assigned permissions yet.",
+                confirmButtonColor: "#6f42c1",
+            });
+            return;
+        }
+
+        permissions.forEach(permission => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("d-flex", "justify-content-between", "align-items-center");
+
+            listItem.innerHTML = `
+                <span><i class="fa fa-check-circle text-success"></i> ${permission.name}</span>
+                <button class="btn btn-danger btn-sm remove-permission" data-permission-id="${permission.id}" data-job-title-id="${jobTitleId}">
+                    <i class="fa fa-trash"></i>
+                </button>
+            `;
+
+            permissionsList.appendChild(listItem);
+        });
+
+        attachRemovePermissionHandlers(); // ✅ Attach event handlers to remove permissions
+        showModalSafely(); // ✅ Use the safe modal function
+    };
+
+    
+    // ✅ Attach View Handlers (AFTER defining displayAssignedPermissions)
     const attachViewHandlers = () => {
         document.querySelectorAll(".view-job-title").forEach(button => {
             button.addEventListener("click", async (event) => {
                 const jobTitleId = event.target.dataset.id;
+
                 try {
                     const response = await fetch(`/api/job-titles/${jobTitleId}/permissions/`);
+
+                    if (response.status === 404) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Permissions Assigned",
+                            text: "This job title has no assigned permissions yet.",
+                            confirmButtonColor: "#6f42c1",
+                        });
+                        return;
+                    }
+
                     if (!response.ok) throw new Error("Failed to fetch assigned permissions.");
 
                     const permissions = await response.json();
-                    const permissionsList = permissions.map(p => `• ${p.name}`).join("\n");
-
-                    showAlert("info", "Assigned Permissions", permissionsList);
+                    displayAssignedPermissions(permissions, jobTitleId);
                 } catch (error) {
                     console.error("❌ Error fetching assigned permissions:", error);
                     showAlert("error", "Error", "Failed to load assigned permissions.");
@@ -199,23 +316,34 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Fetch and Populate Job Titles Dropdown
     const fetchJobTitlesDropdown = async () => {
         try {
+            console.log("📡 Fetching job titles..."); // Debugging log
+    
             const response = await fetch("/job-titles/");
-            if (!response.ok) throw new Error("Failed to fetch job titles");
-            const jobTitles = await response.json();
-
-            jobTitleDropdown.innerHTML = `<option value="" disabled selected>-- Select Job Title --</option>`;
-
+            const text = await response.text(); // Read response
+    
+            console.log("📡 Raw Response:", text); // Debugging: log full response
+    
+            if (!response.ok) throw new Error(`Failed to fetch job titles: ${text}`);
+    
+            const jobTitles = JSON.parse(text);
+    
+            jobTitleDropdown.innerHTML = ""; // ✅ Clear old options
+            jobTitleDropdown.innerHTML += `<option value="" disabled selected>-- Select Job Title --</option>`;
+    
             jobTitles.forEach(jobTitle => {
                 let option = document.createElement("option");
                 option.value = jobTitle.id;
                 option.textContent = jobTitle.title_name;
                 jobTitleDropdown.appendChild(option);
             });
+    
+            console.log("✅ Job titles populated successfully!");
         } catch (error) {
             console.error("❌ Error fetching job titles for dropdown:", error);
             showAlert("error", "Error", "Failed to load job titles.");
         }
     };
+    
 
     const assignPermissionsToJobTitle = async () => {
         const jobTitleId = jobTitleDropdown.value;
@@ -264,30 +392,165 @@ document.addEventListener("DOMContentLoaded", () => {
     
     assignPermissionsBtn.addEventListener("click", assignPermissionsToJobTitle);
 
-    // ✅ Fetch Assigned Permissions
     const fetchAssignedPermissions = async (jobTitleId) => {
-        if (!jobTitleId) return;
-    
+        if (!jobTitleId || jobTitleId.trim() === "") {
+            showAlert("warning", "Invalid Job Title", "Please select a valid job title.");
+            return;
+        }
+        
         try {
             const response = await fetch(`/api/job-titles/${jobTitleId}/permissions/`);
-            if (!response.ok) throw new Error("Failed to fetch assigned permissions.");
-
+    
+            if (response.status === 404) {
+                // ✅ Handle case where no permissions are assigned
+                Swal.fire({
+                    icon: "info",
+                    title: "No Permissions Assigned",
+                    text: "This job title has no assigned permissions yet.",
+                    confirmButtonColor: "#6f42c1",
+                });
+                return;
+            }
+    
+            if (!response.ok) {
+                throw new Error("Failed to fetch assigned permissions.");
+            }
+    
             const assignedPermissions = await response.json();
-            chosenPermissions.innerHTML = ""; 
-
+            const permissionsList = document.getElementById("permissionsList");
+            permissionsList.innerHTML = ""; // Clear previous content
+    
+            if (assignedPermissions.length === 0) {
+                Swal.fire({
+                    icon: "info",
+                    title: "No Permissions Assigned",
+                    text: "This job title has no assigned permissions yet.",
+                    confirmButtonColor: "#6f42c1",
+                });
+                return;
+            }
+    
             assignedPermissions.forEach(permission => {
-                let option = document.createElement("option");
-                option.value = permission.id;
-                option.textContent = permission.name;
-                chosenPermissions.appendChild(option);
+                const listItem = document.createElement("li");
+                listItem.classList.add("permission-item", "d-flex", "justify-content-between", "align-items-center");
+    
+                listItem.innerHTML = `
+                    <span><i class="fa fa-check-circle text-success"></i> ${permission.name}</span>
+                    <button class="btn btn-danger btn-sm remove-permission" data-permission-id="${permission.id}" data-job-title-id="${jobTitleId}">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                `;
+                permissionsList.appendChild(listItem);
             });
-
+    
+            attachRemovePermissionHandlers();
+            $("#permissionsModal").modal("show"); // Show modal
+    
         } catch (error) {
             console.error("❌ Error fetching assigned permissions:", error);
-            showAlert("error", "Error", "Failed to load assigned permissions.");
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Failed to load assigned permissions.",
+                confirmButtonColor: "#6f42c1",
+            });
         }
     };
     
+    // ✅ Attach Click Event for Removing Assigned Permissions
+    const attachRemovePermissionHandlers = () => {
+        document.querySelectorAll(".remove-permission").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const button = event.target.closest("button");
+                if (!button) return;
+                
+                const permissionId = button.dataset.permissionId;
+                const jobTitleId = button.dataset.jobTitleId;
+    
+                if (!jobTitleId || !permissionId) {
+                    showAlert("error", "Error", "Invalid Job Title or Permission ID.");
+                    return;
+                }
+    
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This will remove the permission from the job title.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#dc3545",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: "Yes, remove it!"
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            console.log(`📡 Removing Permission ID: ${permissionId} from Job Title ID: ${jobTitleId}`);
+                            const response = await fetch(`/job-titles/${jobTitleId}/remove-permission/${permissionId}/`, {
+                                method: "DELETE",
+                                headers: { "X-CSRFToken": getCSRFToken() },
+                            });
+    
+                            if (response.ok) {
+                                showAlert("success", "Removed!", "Permission removed successfully.");
+                                fetchAssignedPermissions(jobTitleId); // Refresh list
+                            } else {
+                                showAlert("error", "Error", "Failed to remove permission.");
+                            }
+                        } catch (error) {
+                            console.error("❌ Error removing permission:", error);
+                            showAlert("error", "Error", "An unexpected error occurred.");
+                        }
+                    }
+                });
+            });
+        });
+    };
+
+    document.getElementById("remove-all-permissions").addEventListener("click", async () => {
+        const jobTitleId = document.querySelector(".remove-permission")?.dataset.jobTitleId;
+    
+        if (!jobTitleId) {
+            showAlert("warning", "Invalid Job Title", "No job title found.");
+            return;
+        }
+    
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will remove ALL permissions from this job title.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc3545",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Yes, remove all!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    console.log(`📡 Removing all permissions from Job Title ID: ${jobTitleId}`);
+                    const response = await fetch(`/job-titles/${jobTitleId}/remove-all-permissions/`, {
+                        method: "DELETE",
+                        headers: { "X-CSRFToken": getCSRFToken() },
+                    });
+    
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Removed!",
+                            text: "All permissions removed successfully.",
+                            confirmButtonColor: "#6f42c1",
+                        }).then(() => {
+                            location.reload(); // ✅ Reload page after removing all permissions
+                        });
+                    } else {
+                        showAlert("error", "Error", "Failed to remove all permissions.");
+                    }
+                } catch (error) {
+                    console.error("❌ Error removing all permissions:", error);
+                    showAlert("error", "Error", "An unexpected error occurred.");
+                }
+            }
+        });
+    });
+    
+
     // ✅ Filter Available Permissions
     filterAvailableInput.addEventListener("input", () => {
         let filterText = filterAvailableInput.value.toLowerCase();
