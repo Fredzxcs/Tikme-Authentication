@@ -124,27 +124,39 @@ document.addEventListener("DOMContentLoaded", function() {
         element.classList.add('is-invalid');
     }
 
+   // ✅ Fetch user details and populate fields
+   fetch('/account_settings/', {
+    method: 'GET',
+    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            fullName.value = data.user.full_name || "";
+            email.value = data.user.email;
+            phone.value = data.user.phone_number || "";
+        } else {
+            console.error("Failed to load user settings:", data.message);
+        }
+    })
+    .catch(error => console.error("Error fetching user settings:", error));
+
+
     function clearError(element, errorElement) {
         errorElement.style.display = 'none';
         element.classList.remove('is-invalid');
     }
 
+    // ✅ Handle form submission (PATCH request)
     form.addEventListener('submit', function(e) {
         e.preventDefault();  // Prevent default form submission
-    
-        // Prepare the data to send in the PATCH request
+
         const formData = new FormData(form);
-    
-        // Ensure full name is split correctly (first & last name separately)
-        const fullName = document.getElementById("fullName").value.trim();
-        const nameParts = fullName.split(" ");
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.slice(1).join(" ") || "";  // Handles multiple last names
-    
-        formData.append("first_name", firstName);
-        formData.append("last_name", lastName);
-    
-        fetch('/account-settings/', {
+        const nameParts = fullName.value.trim().split(" ");
+        formData.append("first_name", nameParts[0] || "");
+        formData.append("last_name", nameParts.slice(1).join(" ") || "");
+
+        fetch('/account_settings/', {
             method: 'PATCH',
             headers: { 'X-CSRFToken': csrfToken },
             body: formData,
@@ -157,38 +169,26 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(data => {
             if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: data.message,
-                });
-        
+                Swal.fire({ icon: 'success', title: 'Success!', text: data.message });
+
                 // ✅ Update UI after success
-                document.getElementById("fullName").value = formData.get("full_name");
-                document.getElementById("phone").value = formData.get("phone_number");
+                fullName.value = formData.get("full_name");
+                phone.value = formData.get("phone_number");
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: data.message || "Something went wrong!",
-                });
+                Swal.fire({ icon: 'error', title: 'Error!', text: data.message || "Something went wrong!" });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Server Error',
-                text: 'An unexpected error occurred. Please try again later.',
-            });
-        });        
+            Swal.fire({ icon: 'error', title: 'Server Error', text: 'An unexpected error occurred. Please try again later.' });
+        });
     });
-    
+
     // Validate password matching on input change
     newPassword.addEventListener('input', validatePassword);
     confirmPassword.addEventListener('input', confirmPasswordValidation);
 
-    // Preview profile picture before uploading
+    // ✅ Preview profile picture before uploading
     if (profilePictureInput) {
         profilePictureInput.addEventListener('change', function() {
             const file = profilePictureInput.files[0];
@@ -206,6 +206,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+
 
     // Handle cancel button click
     const cancelButton = document.querySelector('.btn-secondary');

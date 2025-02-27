@@ -23,8 +23,8 @@
         <form id="login-form" method="post" action="{% url 'admin_login' %}">
           {% csrf_token %}
           <p>
-            <label for="employee_number">Employee Number<span>*</span></label>
-            <input type="text" id="employee_number" name="employee_number" placeholder="Enter your employee number" required>
+            <label for="user_number">User Number<span>*</span></label>
+            <input type="text" id="user_number" name="user_number" placeholder="Enter your user number" required>
           </p>
           <p>
             <label for="password">Password<span>*</span></label>
@@ -45,7 +45,7 @@
             Need help? Contact tech support <a href="{% url 'tech_support' %}" class="tech-support-link">here</a>.
           </p>
           <p class="go-back">
-            <a href="http://193.203.161.247/" class="portal-link">Go back to Portal</a>
+            <a href="https://tikme-portal-krfg.onrender.com/" class="portal-link">Go back to Portal</a>
           </p>
         </div>
       </div>

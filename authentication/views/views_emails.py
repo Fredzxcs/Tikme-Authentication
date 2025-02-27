@@ -48,19 +48,19 @@ class TechSupportView(views.APIView):
 
 
 class SendOnboardingEmailView(views.APIView):
-    def get(self, request, employee_id):
-        employee = get_object_or_404(User, pk=employee_id)
-        send_onboarding_email(request, employee)
+    def get(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+        send_onboarding_email(request, user)
         return JsonResponse({'success': 'Onboarding email sent successfully.'})
 
 class SendLockedEmailView(views.APIView):
-    def get(self, request, employee_id):
-        employee = get_object_or_404(User, pk=employee_id)
-        send_locked_email(employee)
+    def get(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+        send_locked_email(user)
         return JsonResponse({'success': 'Locked email sent successfully.'})
 
 class SendReactivationEmailView(views.APIView):
-    def get(self, request, employee_id):
-        employee = get_object_or_404(User, pk=employee_id)
-        send_reactivation_email(employee)
+    def get(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+        send_reactivation_email(user)
         return JsonResponse({'success': 'Reactivation email sent successfully.'})

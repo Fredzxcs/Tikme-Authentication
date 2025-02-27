@@ -10,6 +10,9 @@ from django.conf import settings
 
 # Utility Functions
 def validate_token(request):
+    """
+    Validates the JWT token provided in the request cookies.
+    """
     token = request.COOKIES.get('jwt')
     if not token:
         raise AuthenticationFailed('Unauthorized: No token provided.')
@@ -28,14 +31,14 @@ def get_users_by_role(user):
     """
     Determines the users and roles accessible based on the authenticated user's role.
     """
-    if not user.role:  # Ensure the user has a role assigned
+    if not user.role:
         raise PermissionDenied('Your account does not have an assigned role.')
 
     if user.role.role_name == 'Super Admin':
-        roles = ['Super Admin', 'System Admin', 'Manager', 'Employee']
+        roles = ['Super Admin', 'System Admin', 'Manager', 'User']
         users = User.objects.all()
     elif user.role.role_name == 'System Admin':
-        roles = ['Manager', 'Employee']
+        roles = ['Manager', 'User']
         users = User.objects.filter(role__role_name__in=roles)
     else:
         raise PermissionDenied('You do not have permission to access this page.')
@@ -81,6 +84,9 @@ class RoleListCreateView(views.APIView):
         return Response(role_serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        """
+        Creates a new role. Only Super Admin and System Admin can create roles.
+        """
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
 
@@ -100,6 +106,9 @@ class RoleDetailView(views.APIView):
     Handles retrieving, updating, and deleting a single role.
     """
     def get(self, request, pk):
+        """
+        Retrieves details of a specific role.
+        """
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
 
@@ -108,8 +117,14 @@ class RoleDetailView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
+        """
+        Updates an existing role. Only Super Admin can update roles.
+        """
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
+
+        if user.role.role_name != 'Super Admin':
+            return Response({'error': 'You do not have permission to edit roles.'}, status=status.HTTP_403_FORBIDDEN)
 
         role = get_object_or_404(Role, pk=pk)
         serializer = RoleSerializer(role, data=request.data, partial=True)
@@ -119,8 +134,14 @@ class RoleDetailView(views.APIView):
         return Response(RoleSerializer(updated_role).data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
+        """
+        Deletes a role. Only Super Admin can delete roles.
+        """
         payload = validate_token(request)
         user = get_object_or_404(User, id=payload['id'])
+
+        if user.role.role_name != 'Super Admin':
+            return Response({'error': 'You do not have permission to delete roles.'}, status=status.HTTP_403_FORBIDDEN)
 
         role = get_object_or_404(Role, pk=pk)
         role.delete()

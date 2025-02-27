@@ -2,9 +2,8 @@ from rest_framework.response import Response
 from rest_framework import status, views
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
-from django.utils.http import urlsafe_base64_decode
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework_simplejwt.exceptions import TokenError
+from django.utils.timezone import now
+from django.core.cache import cache
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from ..models import *
 from ..serializers import *
@@ -38,10 +37,10 @@ def get_users_by_role(user):
     Retrieves users and roles based on the current user's role.
     """
     if user.role.role_name == 'Super Admin':
-        roles = ['System Admin', 'Manager', 'Employee']
+        roles = ['System Admin', 'Manager', 'User']
         users = User.objects.all()
     elif user.role.role_name == 'System Admin':
-        roles = ['Manager', 'Employee']
+        roles = ['Manager', 'User']
         users = User.objects.filter(role__role_name__in=roles)
     else:
         raise PermissionDenied('You do not have permission to access this page.')
@@ -50,15 +49,16 @@ def get_users_by_role(user):
 
 class ManageUsersView(views.APIView):
     """
-    Handles fetching user, role, and module data for the manage users page.
+    Handles fetching user, role, and module data for the Manage Users page.
     """
+
     def get(self, request):
         try:
-            # Validate the user's token
+            # ✅ Validate the user's token
             payload = validate_token(request)
             current_user = get_object_or_404(User, id=payload['id'])
 
-            # Ensure the user has a valid role
+            # ✅ Ensure user has a valid role
             if not current_user.role or not hasattr(current_user.role, 'role_name'):
                 logger.warning(f"User {current_user.email} does not have an assigned role.")
                 return Response(
@@ -66,37 +66,41 @@ class ManageUsersView(views.APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            # Determine if the user is a Super Admin or System Admin
-            is_super_admin = current_user.role.role_name == 'Super Admin'
-            is_system_admin = current_user.role.role_name == 'System Admin'
+            # ✅ Automatically unlock temporarily locked users if lock duration expired
+            for user in User.objects.filter(status__status_name="Temporarily Locked"):
+                locked_until = cache.get(f"locked_until_{user.id}")
+                if locked_until and now() >= locked_until:
+                    user.status = Status.objects.get_or_create(status_name="Active")[0]
+                    user.save()
+                    cache.delete(f"locked_until_{user.id}")  # Remove lock
 
-            # Fetch users and roles based on the current user's permissions
+            # ✅ Determine user permissions
+            is_super_admin = current_user.role.role_name == "Super Admin"
+            is_system_admin = current_user.role.role_name == "System Admin"
+
+            # ✅ Fetch users, roles, and modules based on access level
             users, roles = get_users_by_role(current_user)
-            employees_data = UserSerializer(users, many=True).data
+            users_data = UserSerializer(users, many=True).data
             roles_data = RoleSerializer(Role.objects.filter(role_name__in=roles), many=True).data
-
-            # Fetch all modules
             modules_data = ModuleSerializer(Module.objects.all(), many=True).data
 
-            # Check if the request is for HTML or JSON
+            # ✅ Check request type (HTML or JSON)
             if request.META.get('HTTP_ACCEPT', '').startswith('text/html'):
-                # Render the HTML template
                 return render(
                     request,
-                    'manage_users.html',  # Ensure this template exists in your project
+                    'manage_users.html',
                     {
-                        'employees': employees_data,
+                        'users': users_data,
                         'roles': roles_data,
                         'modules': modules_data,
                         'is_super_admin': is_super_admin,
                         'is_system_admin': is_system_admin,
                     },
                 )
-            
-            # Return JSON response for the frontend
+
             return Response(
                 {
-                    'employees': employees_data,
+                    'users': users_data,
                     'roles': roles_data,
                     'modules': modules_data,
                     'is_super_admin': is_super_admin,
@@ -104,13 +108,14 @@ class ManageUsersView(views.APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+
         except PermissionDenied as e:
             logger.error(f"Permission denied: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             logger.exception(f"An error occurred in ManageUsersView: {str(e)}")
             return Response({'error': 'An error occurred while fetching data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
 class AddUserView(views.APIView):
     def post(self, request):
         try:
@@ -118,8 +123,8 @@ class AddUserView(views.APIView):
             current_user = get_object_or_404(User, id=payload['id'])
 
             # Permissions check for System Admin
-            if current_user.role.role_name == 'System Admin' and request.data.get('role') not in ['Manager', 'Employee']:
-                return Response({'error': 'System Admin can only add Manager or Employee roles.'}, status=status.HTTP_400_BAD_REQUEST)
+            if current_user.role.role_name == 'System Admin' and request.data.get('role') not in ['Manager', 'User']:
+                return Response({'error': 'System Admin can only add Manager or User roles.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Fetch related objects by name
             role_name = request.data.get('role', '').strip()
@@ -142,7 +147,7 @@ class AddUserView(views.APIView):
 
             # Create user
             data = {
-                "employee_number": request.data.get("employee_number"),
+                "user_number": request.data.get("user_number"),
                 "first_name": request.data.get("first_name"),
                 "last_name": request.data.get("last_name"),
                 "email": request.data.get("email"),
@@ -184,21 +189,21 @@ class EditUserView(views.APIView):
             user = get_object_or_404(User, id=pk)
 
             # Store old values
-            old_employee_number = user.employee_number
+            old_user_number = user.user_number
             old_email = user.email
 
             # Get new values from request
-            new_employee_number = request.data.get("employee_number", old_employee_number)
+            new_user_number = request.data.get("user_number", old_user_number)
             new_email = request.data.get("email", old_email)
 
-            # Only validate employee_number if changed
-            if new_employee_number and new_employee_number != old_employee_number:
-                if User.objects.filter(employee_number=new_employee_number).exclude(id=pk).exists():
+            # Only validate user_number if changed
+            if new_user_number and new_user_number != old_user_number:
+                if User.objects.filter(user_number=new_user_number).exclude(id=pk).exists():
                     return Response(
-                        {"error": "A user with this employee number already exists."},
+                        {"error": "A user number already exists."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                user.employee_number = new_employee_number  # Update if changed
+                user.user_number = new_user_number  # Update if changed
 
             # Only validate email if changed
             if new_email and new_email != old_email:
@@ -219,9 +224,9 @@ class EditUserView(views.APIView):
                     status=status.HTTP_200_OK,
                 )
 
-            # Exclude email and employee_number from updates if unchanged
+            # Exclude email and user_number from updates if unchanged
             request_data = request.data.copy()
-            request_data.pop("employee_number", None)
+            request_data.pop("user_number", None)
             request_data.pop("email", None)
 
             # Save other updates
@@ -261,36 +266,59 @@ class DeleteUserView(views.APIView):
 
 class StatusActionsView(views.APIView):
     """
-    Handles updating user statuses: Pending -> Active, Active -> Inactive/Suspended, etc.
+    Handles updating user statuses, including activation, suspension, and lock management.
     """
+
     def post(self, request, pk):
         payload = validate_token(request)
         current_user = get_object_or_404(User, id=payload['id'])
-
         target_user = get_object_or_404(User, pk=pk)
 
-        # Only Super Admin can change user statuses
+        # ✅ Only Super Admins can change statuses
         if current_user.role.role_name != 'Super Admin':
             raise PermissionDenied('Only Super Admin can change user statuses.')
 
         new_status = request.data.get('status', '').capitalize()
-        if not new_status or new_status not in ['Pending', 'Active', 'Inactive', 'Suspended']:
+        if not new_status or new_status not in ['Pending', 'Active', 'Inactive', 'Suspended', 'Temporarily Locked', 'Permanently Locked']:
             return Response({'error': 'Invalid status provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Handle status transitions
-        if target_user.status.status_name == 'Pending' and new_status == 'Active':
-            # Automatically activate after setup
-            target_user.status = Status.objects.get_or_create(status_name='Active')[0]
-        elif target_user.status.status_name == 'Active' and new_status in ['Inactive', 'Suspended']:
-            target_user.status = Status.objects.get_or_create(status_name=new_status)[0]
-        elif target_user.status.status_name == 'Inactive' and new_status == 'Active':
-            target_user.status = Status.objects.get_or_create(status_name='Active')[0]
-        elif target_user.status.status_name == 'Suspended' and new_status == 'Active':
-            target_user.status = Status.objects.get_or_create(status_name='Active')[0]
-        else:
+        # ✅ Handle automatic unlock for temporarily locked users
+        if target_user.status.status_name == "Temporarily Locked":
+            locked_until = cache.get(f"locked_until_{target_user.id}")
+            if locked_until and now() >= locked_until:
+                target_user.status = Status.objects.get_or_create(status_name="Active")[0]
+                cache.delete(f"locked_until_{target_user.id}")  # Remove lock
+                target_user.save()
+                return Response({'message': 'User unlocked from temporary lock and set to Active.'}, status=status.HTTP_200_OK)
+
+        # ✅ Handle valid status transitions
+        valid_transitions = {
+            "Pending": ["Active"],
+            "Active": ["Inactive", "Suspended", "Temporarily Locked"],
+            "Inactive": ["Active"],
+            "Suspended": ["Active"],
+            "Temporarily Locked": ["Active"],  # Admin can manually unlock if needed
+            "Permanently Locked": ["Active"],  # Admin can manually unlock if needed
+        }
+
+        current_status = target_user.status.status_name
+        if new_status not in valid_transitions.get(current_status, []):
             return Response({'error': 'Invalid status transition.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # ✅ Update status
+        target_user.status = Status.objects.get_or_create(status_name=new_status)[0]
         target_user.save()
+
+        # ✅ Send appropriate email notifications
+        if new_status == "Temporarily Locked":
+            locked_until_time = now() + timedelta(minutes=15)  # Lock duration: 15 minutes
+            cache.set(f"locked_until_{target_user.id}", locked_until_time, timeout=900)
+            send_temp_locked_email(target_user)
+        elif new_status == "Permanently Locked":
+            send_permanent_locked_email(target_user)
+        elif new_status == "Active":
+            send_reactivation_email(target_user)
+
         return Response({'message': f'User status updated to {new_status}.'}, status=status.HTTP_200_OK)
 
 

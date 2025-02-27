@@ -7,7 +7,7 @@
 {% block content %}
 <div class="main-container">
     <h2 class="form-title">Answer Your Security Questions</h2>
-    <p class="instructions">Please type all your answers in lowercase. Answers are case-insensitive.</p>
+    <p class="instructions">Please type all your answers in lowercase.</p>
     <form method="post" id="forgot-security-questions-form">
         {% csrf_token %}
         <input type="hidden" name="token" value="{{ token }}">

@@ -1,14 +1,26 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const loginForm = document.getElementById('login-form');
+document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.getElementById("login-form");
+    const userNumberInput = document.getElementById("user_number");
+    const passwordInput = document.getElementById("password");
+    const unlockButton = document.getElementById("unlockButton");
+    const lockMessage = document.getElementById("lockMessage");
 
-    // Function to get the CSRF token from the cookie
+    let loginAttempts = 0;
+    let lockedUntil = null;
+
+    // ✅ Function to get CSRF Token
+    function getCSRFToken() {
+        let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+        return csrfToken ? csrfToken.value : getCookie("csrftoken");
+    }
+
     function getCookie(name) {
         let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                if (cookie.startsWith(name + "=")) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
                 }
@@ -17,95 +29,144 @@ document.addEventListener('DOMContentLoaded', function () {
         return cookieValue;
     }
 
-    const csrftoken = getCookie('csrftoken');
+    // ✅ Function to show alerts
+    function showAlert(icon, title, text) {
+        Swal.fire({ icon, title, text });
+    }
 
-    if (loginForm) {
-        loginForm.addEventListener('submit', function (event) {
-            event.preventDefault();
+    // ✅ Function to check lock status & show countdown
+    async function checkLockStatus() {
+        if (!userNumberInput.value) return;
 
-            const employeeNumber = document.getElementById('employee_number').value.trim();
-            const password = document.getElementById('password').value.trim();
+        try {
+            const response = await fetch(`/check-lock-status/${userNumberInput.value}/`);
+            const data = await response.json();
 
-            // Validate inputs before making a request
-            if (!employeeNumber || !password) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Missing Information',
-                    text: 'Please fill in both Employee Number and Password fields.',
-                });
-                return;
+            if (data.status === "Temporarily Locked" && data.locked_until) {
+                lockedUntil = new Date(data.locked_until);
+                startCountdown();
+                lockMessage.innerText = `Account locked until ${lockedUntil.toLocaleTimeString()}.`;
+            } else {
+                lockedUntil = null;
+                lockMessage.innerText = "";
             }
+        } catch (error) {
+            console.error("Error checking lock status:", error);
+        }
+    }
 
-            // Display loading animation
-            Swal.fire({
-                title: 'Logging in...',
-                text: 'Please wait while we process your request.',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-            });
+    // ✅ Countdown Timer for Temporary Lock
+    function startCountdown() {
+        if (!lockedUntil) return;
 
-            fetch('/admin_login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken, // Add the CSRF token to the header
-                },
-                body: JSON.stringify({
-                    employee_number: employeeNumber,
-                    password: password,
-                }),
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.detail || 'Login failed. Please try again.');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.jwt && data.redirect_to) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Login Successful',
-                            text: 'Redirecting to your dashboard...',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        }).then(() => {
-                            // Redirect to the dashboard
-                            window.location.href = data.redirect_to;
-                        });
-                    } else {
-                        throw new Error('Invalid response from server.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+        const interval = setInterval(() => {
+            const now = new Date();
+            const timeRemaining = Math.max(0, Math.floor((lockedUntil - now) / 1000));
 
-                    // Handle specific error cases
-                    let errorMessage = 'An unexpected error occurred.';
-                    if (error.message.includes('Invalid credentials')) {
-                        errorMessage = 'Incorrect Employee Number or Password.';
-                    } else if (error.message.includes('Session expired')) {
-                        errorMessage = 'Your session has expired. Please log in again.';
-                    }
+            if (timeRemaining <= 0) {
+                clearInterval(interval);
+                location.reload(); // Reload page after countdown ends
+            } else {
+                lockMessage.innerText = `Account locked. Try again in ${timeRemaining} seconds.`;
+            }
+        }, 1000);
+    }
 
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Login Failed',
-                        text: errorMessage,
-                    });
+    // ✅ Handle Login Form Submission
+    loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        handleLogin();
+    });
+
+    // ✅ Function to handle login request
+    function handleLogin() {
+        console.log("🔹 Submitting login request...");
+
+        const formData = new FormData(loginForm);
+        const payload = Object.fromEntries(formData.entries());
+
+        Swal.fire({
+            title: "Logging in...",
+            text: "Please wait while we process your request.",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        fetch("/admin_login/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(async (response) => {
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("🔴 Fetch error:", response.status, errorText);
+                throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log("✅ Server Response:", data);
+
+            if (data.redirect_to) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Login Successful",
+                    text: "Redirecting to your dashboard...",
+                    timer: 2000,
+                    showConfirmButton: false,
+                }).then(() => {
+                    window.location.href = data.redirect_to;
                 });
+            } else {
+                showAlert("error", "Login Failed", data.error || "Invalid credentials!");
+            }
+        })
+        .catch(error => {
+            console.error("🔴 Error during login:", error);
+            showAlert("error", "Login Error", "An unexpected error occurred.");
         });
     }
 
-    // Function to toggle password visibility
+    // ✅ Handle Manual Unlock by Admin
+    if (unlockButton) {
+        unlockButton.addEventListener("click", async () => {
+            try {
+                const response = await fetch(`/unlock-user/${userNumberInput.value}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCSRFToken(),
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert("success", "User Unlocked", data.message);
+                    location.reload();
+                } else {
+                    showAlert("error", "Unlock Failed", data.error || "Could not unlock user.");
+                }
+            } catch (error) {
+                console.error("Error unlocking user:", error);
+                showAlert("error", "Unlock Error", "An unexpected error occurred.");
+            }
+        });
+    }
+
+    // ✅ Function to toggle password visibility
     window.togglePassword = function () {
-        const passwordInput = document.getElementById('password');
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
+        const passwordInput = document.getElementById("password");
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
     };
+
+    checkLockStatus(); // ✅ Check lock status on page load
 });

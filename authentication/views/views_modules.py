@@ -10,6 +10,9 @@ import jwt
 
 # Utility Functions
 def validate_token(request):
+    """
+    Validates the JWT token provided in the request cookies.
+    """
     token = request.COOKIES.get('jwt')
     if not token:
         raise AuthenticationFailed('Unauthorized: No token provided.')
@@ -32,10 +35,10 @@ def get_users_by_role(user):
         raise PermissionDenied('Your account does not have an assigned role.')
 
     if user.role.role_name == 'Super Admin':
-        roles = ['Super Admin', 'System Admin', 'Manager', 'Employee']
+        roles = ['Super Admin', 'System Admin', 'Manager', 'User']
         users = User.objects.all()
     elif user.role.role_name == 'System Admin':
-        roles = ['Manager', 'Employee']
+        roles = ['Manager', 'User']
         users = User.objects.filter(role__role_name__in=roles)
     else:
         raise PermissionDenied('You do not have permission to access this page.')

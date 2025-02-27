@@ -18,51 +18,43 @@ class PermissionSerializer(serializers.ModelSerializer):
     """ ✅ Fetches permissions from Django's auth_permission table """
 
     class Meta:
-        model = Permission  # ✅ Using Django's built-in Permission model
-        fields = ["id", "name", "codename", "content_type"]  # ✅ Includes codename for better control
-        extra_kwargs = {"content_type": {"read_only": True}}  # ✅ Prevents modification of content_type
+        model = Permission
+        fields = ["id", "name", "codename", "content_type"]
+        extra_kwargs = {"content_type": {"read_only": True}}
 
     def validate(self, data):
-        """
-        ✅ Auto-generate `codename` if not provided.
-        ✅ Ensures unique permission name.
-        """
+        """ ✅ Auto-generate `codename` if not provided. ✅ Ensures unique permission name. """
         if not data.get("codename"):
-            data["codename"] = slugify(data["name"])  # Convert name to lowercase with hyphens
+            data["codename"] = slugify(data["name"])
 
         if Permission.objects.filter(name=data["name"]).exists():
             raise serializers.ValidationError({"name": "Permission with this name already exists."})
 
         return data
 
-
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = ['id', 'role_name']
 
-
 class JobTitleSerializer(serializers.ModelSerializer):
     permissions = serializers.PrimaryKeyRelatedField(
         queryset=Permission.objects.all(), many=True
-    )  # ✅ Now correctly fetching from Django's built-in auth_permission table
+    )
 
     class Meta:
         model = JobTitle
         fields = ['id', 'title_name', 'permissions']
-
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Status
         fields = ['id', 'status_name']
 
-
 class SecurityQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecurityQuestion
         fields = ['id', 'question_text']
-
 
 class SecurityAnswerSerializer(serializers.ModelSerializer):
     question = serializers.PrimaryKeyRelatedField(queryset=SecurityQuestion.objects.all())
@@ -72,7 +64,6 @@ class SecurityAnswerSerializer(serializers.ModelSerializer):
         fields = ['id', 'question', 'answer']
 
     def validate(self, data):
-        # Check if answer is provided
         if not data.get('answer'):
             raise serializers.ValidationError({"answer": "An answer is required for the security question."})
         return data
@@ -82,10 +73,8 @@ class SetupPasswordSerializer(serializers.Serializer):
     new_password2 = serializers.CharField(write_only=True, required=True)
 
     def validate(self, data):
-        # Check if passwords match
         if data['new_password1'] != data['new_password2']:
             raise serializers.ValidationError({"new_password2": "Passwords do not match."})
-        # Validate password strength
         validate_password(data['new_password1'])
         return data
 
@@ -103,7 +92,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'employee_number', 'email', 'password',
+            'id', 'user_number', 'email', 'password',
             'first_name', 'last_name', 'role', 'module', 'job_title',
             'status', 'security_answers'
         ]
@@ -153,12 +142,12 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        # Check for duplicate employee_number only if it is being updated
-        if 'employee_number' in validated_data:
-            employee_number = validated_data['employee_number']
-            if employee_number != instance.employee_number:
-                if User.objects.filter(employee_number=employee_number).exclude(id=instance.id).exists():
-                    raise serializers.ValidationError({'employee_number': 'User with this employee number already exists.'})
+        # Check for duplicate user_number only if it is being updated
+        if 'user_number' in validated_data:
+            user_number = validated_data['user_number']
+            if user_number != instance.user_number:
+                if User.objects.filter(user_number=user_number).exclude(id=instance.id).exists():
+                    raise serializers.ValidationError({'user_number': 'User with this user number already exists.'})
 
         # Check for duplicate email only if it is being updated
         if 'email' in validated_data:
@@ -177,12 +166,11 @@ class UserSerializer(serializers.ModelSerializer):
         if module_name:
             instance.module = Module.objects.get(module_name=module_name)
         else:
-            instance.module = None  # Clear the module if not provided
+            instance.module = None
         if job_title_name:
             instance.job_title = JobTitle.objects.get(title_name=job_title_name)
         else:
-            instance.job_title = None  # Clear the job title if not provided
+            instance.job_title = None
 
         instance.save()
         return instance
-

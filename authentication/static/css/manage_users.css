@@ -1,120 +1,203 @@
+/* 🌟 General Styling */
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #f9f9f9;
   color: #333;
-  line-height: 1.6;
-  margin-top: 80px;
-  padding: 0;
+  margin-top: 50px;
 }
 
-/* Container */
-.container {
-  max-width: 1200px;
-  margin: 40px auto;
+/* 🌟 Sidebar Compatibility */
+.dashboard {
+  margin-left: 260px;
   padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
 }
 
-/* Table */
+nav.close ~ .dashboard {
+  margin-left: 90px;
+  width: calc(100% - 90px);
+}
+
+/* 🌟 User Management Container */
+.user-management-container {
+  width: 95%;
+  max-width: 1100px;
+  margin: auto;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: visible; /* Ensures dropdowns are not cut off */
+  z-index: 0;
+}
+
+/* 🌟 Search Bar */
+.search-container {
+  position: relative;
+  width: 250px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+
+.search-container .search-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+}
+
+/* 🌟 Button Styling */
+.btn {
+  font-size: 14px;
+  padding: 10px 16px;
+  color: #fff;
+  background-color: #6f42c1;
+  border: none;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background-color: #5a00e8;
+}
+
+/* 🌟 Form Styling */
+.form-group {
+  flex: 1 1 calc(50% - 10px);
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+/* 🌟 Modal Styling */
+.modal-dialog {
+  max-width: 800px; /* Adjust for better width */
+  width: 90%;
+}
+
+.modal-content {
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* 🌟 Input Fields */
+.form-control, .form-select {
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #5a00e8;
+  box-shadow: 0 0 5px rgba(90, 0, 232, 0.5);
+  outline: none;
+}
+
+/* 🌟 Improve Button Design */
+.btn-primary {
+  background-color: #6f42c1;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px;
+}
+
+/* 🌟 Table */
 .table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible; /* Allow content to overflow the table container */
+  position: relative; /* Ensure z-index positioning works properly */
 }
 
 .table th, .table td {
   text-align: center;
   padding: 14px;
   vertical-align: middle;
-  font-size: 14px;
 }
 
 .table th {
   background-color: #6f42c1;
   color: #fff;
-  text-transform: uppercase;
-  font-weight: bold;
 }
 
-/* Button Styling */
-.btn {
+/* 🌟 Ensure Dropdown is Positioned Outside Table Container */
+.table-responsive {
+  overflow: visible !important; /* Allow the dropdown to overflow */
+}
+
+/* 🌟 Dropdown Styling */
+.dropdown-menu {
+  position: absolute !important; /* Position dropdown outside */
+  top: 100%; /* Position dropdown below the button */
+  left: 0;
+  min-width: 180px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 8px 0;
+  list-style: none;
+  z-index: 9999; /* Ensure it appears above other content */
+  display: none; /* Initially hidden */
+}
+
+/* Show Dropdown when Active */
+.dropdown-menu.show {
+  display: block;
+}
+
+/* 🌟 Dropdown Items Styling */
+.dropdown-menu .dropdown-item {
+  padding: 10px 15px;
   font-size: 14px;
-  padding: 10px 16px;
-  text-transform: uppercase;
-  font-weight: bold;
-  color: #fff;
-  background-color: #6f42c1;
-  border: none;
-  border-radius: 4px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: start;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-.btn:hover {
-  background-color: #5a00e8;
-  transform: translateY(-2px);
+/* 🌟 Hover Effect for Dropdown Items */
+.dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef;
+  color: #5a00e8;
 }
 
-
-
-/* Prevent table overflow hiding dropdown */
-.table {
-  overflow: visible !important;
+/* Ensure Dropdown Doesn't Overflow */
+.dropdown-menu.float {
+  right: 0;
+  left: auto;
 }
 
-/* Ensure dropdown stays within viewport */
-.dropdown {
-  position: relative;
-}
-
-/* Responsive Adjustments */
-@media (min-width: 1024px) and (max-width: 1440px) {
-  .container {
-    max-width: 80%;
-    margin: 30px auto;
-    padding: 15px;
+/* 🌟 Responsive Design */
+@media (max-width: 992px) {
+  .dashboard {
+    margin-left: 90px;
+    width: calc(100% - 90px);
   }
-
-  .dashboard-title {
-    font-size: 28px;
-    margin-bottom: 15px;
-  }
-
-  .table th, .table td {
-    font-size: 13px;
-    padding: 10px;
-  }
-
-  .btn {
-    font-size: 12px;
-    padding: 8px 12px;
+  
+  .modal-dialog {
+    max-width: 600px;
   }
 }
 
-@media (min-width: 1441px) {
-  .container {
-    max-width: 80%;
-    margin: 50px auto;
-    padding: 20px;
-  }
-
-  .dashboard-title {
-    font-size: 34px;
-    margin-bottom: 25px;
-  }
-
-  .table th, .table td {
-    font-size: 15px;
-    padding: 16px;
-  }
-
-  .btn {
-    font-size: 16px;
-    padding: 12px 18px;
-  }
-}

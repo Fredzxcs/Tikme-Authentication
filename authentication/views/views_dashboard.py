@@ -38,10 +38,10 @@ class SystemAdminDashboardView(views.APIView):
         is_system_admin = user.role and user.role.role_name == "System Admin"
 
         if not (is_super_admin or is_system_admin):
-            logger.warning(f"Unauthorized access attempt by user {user.employee_number} with role {user.role.role_name if user.role else 'No Role'}.")
+            logger.warning(f"Unauthorized access attempt by user {user.user_number} with role {user.role.role_name if user.role else 'No Role'}.")
             return render(request, 'unauthorized_access.html')
 
-        logger.info(f"Authenticated user: {user.employee_number} with role {user.role.role_name if user.role else 'No Role'}. Accessing System Admin Dashboard.")
+        logger.info(f"Authenticated user: {user.user_number} with role {user.role.role_name if user.role else 'No Role'}. Accessing System Admin Dashboard.")
         logger.info(f"Is Super Admin: {is_super_admin}")
         logger.info(f"Is System Admin: {is_system_admin}")
 
@@ -50,4 +50,3 @@ class SystemAdminDashboardView(views.APIView):
             'is_super_admin': is_super_admin,
             'is_system_admin': is_system_admin,
         })
-
