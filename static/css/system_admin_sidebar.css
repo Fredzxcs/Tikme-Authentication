@@ -1,0 +1,503 @@
+/* ===== Google Font Import - Poppins ===== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.bootstrap-container {
+    all: unset; /* Resets all inherited styles */
+}
+
+:root{
+    /* ===== Colors ===== */
+    --primary-color: #8A2BE2;   
+    --panel-color: #FFF;
+    --text-color: #8A2BE2;
+    --black-light-color: #707070;
+    --border-color: #e6e5e5;
+    --toggle-color: #DDD;
+    --box1-color: #4DA3FF;
+    --box2-color: #FFE6AC;
+    --box3-color: #E7D1FC;
+    --title-icon-color: #fff;
+    
+    /* ====== Transition ====== */
+    --tran-05: all 0.5s ease;
+    --tran-03: all 0.3s ease;
+    --tran-03: all 0.2s ease;
+}
+
+body{
+    min-height: 100vh;
+}
+
+/* === Custom Scroll Bar CSS === */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.dropdown .submenu {
+    display: none; /* Initially hidden */
+    list-style: none;
+    margin: 0;
+    justify-content: center;
+}
+
+.dropdown .submenu li a {
+    color: var(--black-light-color);
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 0;
+    display: block;
+    transition: var(--tran-03);
+}
+
+.dropdown .submenu li a:hover {
+    color: var(--primary-color);
+}
+
+/* Dropdown icon rotation */
+.dropdown .dropdown-toggle {
+    display: flex;
+    align-items: center;
+   
+}
+
+.dropdown .dropdown-toggle i.dropdown-arrow {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.dropdown.active .dropdown-arrow {
+    transform: rotate(90deg); /* Rotate the arrow when active */
+}
+
+.dropdown-toggle::after {
+    display: none; /* Hides the caret */
+    content: none; /* Ensures no additional content is rendered */
+}
+
+
+/* Existing Sidebar CSS */
+/* ===== Sidebar General Styling ===== */
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 260px;
+    padding: 10px 30px 0 0;
+    background-color: var(--panel-color);
+    border-right: 1px solid var(--border-color);
+    transition: var(--tran-05);
+    overflow-y: auto; /* Add scrollbar */
+    overflow-x: hidden; /* Hide horizontal overflow */
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--panel-color);
+}
+
+nav::-webkit-scrollbar {
+    width: 8px;
+}
+
+nav::-webkit-scrollbar-track {
+    background-color: var(--panel-color);
+}
+
+nav::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 10px;
+}
+
+nav::-webkit-scrollbar-thumb:hover {
+    background-color: #6a1ab9;
+}
+
+.menu-items {
+    padding-bottom: 20px; /* Adds space for scrollbar visibility */
+}
+
+nav.close{
+    width: 90px;
+    display: none;
+}
+nav .logo-name{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+nav .logo-image{
+    display: flex;
+    justify-content: center;
+    min-width: 45px;
+}
+nav .logo-image img{
+    width: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+nav .logo-name .logo_name{
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-left: 14px;
+    transition: var(--tran-05);
+}
+nav.close .logo_name{
+    opacity: 0;
+    pointer-events: none;
+}
+nav .menu-items{
+    
+    margin-top: 10px;
+    height: calc(100% - 90px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+}
+.menu-items li{
+    list-style: none;
+    
+}
+.menu-items li a{
+    display: flex;
+    align-items: center;
+    height: 50px;
+    text-decoration: none;
+    position: relative;
+}
+.nav-links li a:hover:before{
+    content: "";
+    position: absolute;
+    left: -7px;
+    height: 5px;
+    width: 5px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+}
+.menu-items li a i{
+    font-size: 24px;
+    min-width: 45px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--black-light-color);
+}
+.menu-items li a .link-name{
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--black-light-color);    
+    transition: var(--tran-05);
+}
+nav.close li a .link-name{
+    opacity: 0;
+    pointer-events: none;
+}
+.nav-links li a:hover i,
+.nav-links li a:hover .link-name{
+    color: var(--primary-color);
+}
+body.dark .nav-links li a:hover i,
+body.dark .nav-links li a:hover .link-name{
+    color: var(--text-color);
+}
+.menu-items .logout-mode{
+    border-top: 1px solid var(--border-color);
+}
+.menu-items .mode{
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+.menu-items .mode-toggle{
+    position: absolute;
+    right: 14px;
+    height: 50px;
+    min-width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Main Content Sections */
+.view-profile, .account-settings, .logs {
+    padding: 20px;
+    background-color: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.profile-info img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Dropdown Toggle Button */
+.dropdown-toggle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background-color: #6f42c1;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Proper Floating Dropdown */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 8px 0;
+  list-style: none;
+  display: none; /* Initially hidden */
+  z-index: 1050;
+}
+
+/* Ensure Dropdown Stays Visible When Opened */
+.dropdown-menu.show {
+  display: block;
+}
+
+/* Dropdown Items */
+.dropdown-menu .dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: start;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover Effect */
+.dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef;
+  color: #5a00e8;
+}
+
+/* Ensure Dropdown Doesn't Overflow */
+.dropdown-menu.float {
+  right: 0;
+  left: auto;
+}
+
+.update-btn {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--tran-03);
+}
+
+.update-btn:hover {
+    background-color: var(--text-color);
+}
+
+/* Settings Form */
+.account-settings form div {
+    margin-bottom: 15px;
+}
+
+.account-settings label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.account-settings input, .account-settings select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.account-settings button {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--tran-03);
+}
+
+.account-settings button:hover {
+    background-color: var(--text-color);
+}
+nav.close ~ .dashboard{
+    left: 73px;
+    width: calc(100% - 73px);
+}
+
+.dashboard .top{
+    position: fixed;
+    top: 0;
+    left: 260px;
+    display: flex;
+    width: calc(100% - 260px);
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background-color: var(--panel-color);
+    transition: var(--tran-05);
+    z-index: 10;
+}
+
+nav.close ~ .dashboard .top{
+    left: 0px;
+    width: calc(100% - 0px);
+}
+.dashboard .top .sidebar-toggle{
+    font-size: 26px;
+    color: var(--text-color);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+
+@media (max-width: 1000px) {
+    nav{
+        width: 73px;
+    }
+    nav.close{
+        width: 250px;
+    }
+    nav .logo_name{
+        opacity: 0;
+        pointer-events: none;
+    }
+    nav.close .logo_name{
+        opacity: 1;
+        pointer-events: auto;
+    }
+    nav li a .link-name{
+        opacity: 0;
+        pointer-events: none;
+    }
+    nav.close li a .link-name{
+        opacity: 1;
+        pointer-events: auto;
+    }
+    nav ~ .dashboard{
+        left: 73px;
+        width: calc(100% - 73px);
+    }
+    nav.close ~ .dashboard{
+        left: 250px;
+        width: calc(100% - 250px);
+    }
+    nav ~ .dashboard .top{
+        left: 73px;
+        width: calc(100% - 73px);
+    }
+    nav.close ~ .dashboard .top{
+        left: 250px;
+        width: calc(100% - 250px);
+    }
+    .activity .activity-data{
+        overflow-X: scroll;
+    }
+}
+
+@media (max-width: 780px) {
+    .dash-content .boxes .box{
+        width: calc(100% / 2 - 15px);
+        margin-top: 15px;
+    }
+}
+@media (max-width: 560px) {
+    .dash-content .boxes .box{
+        width: 100% ;
+    }
+}
+@media (max-width: 400px) {
+    nav{
+        width: 0px;
+    }
+    nav.close{
+        width: 73px;
+    }
+    nav .logo_name{
+        opacity: 0;
+        pointer-events: none;
+    }
+    nav.close .logo_name{
+        opacity: 0;
+        pointer-events: none;
+    }
+    nav li a .link-name{
+        opacity: 0;
+        pointer-events: none;
+    }
+    nav.close li a .link-name{
+        opacity: 0;
+        pointer-events: none;
+    }
+    nav ~ .dashboard{
+        left: 0;
+        width: 100%;
+    }
+    nav.close ~ .dashboard{
+        left: 73px;
+        width: calc(100% - 73px);
+    }
+    nav ~ .dashboard .top{
+        left: 0;
+        width: 100%;
+    }
+    nav.close ~ .dashboard .top{
+        left: 0;
+        width: 100%;
+    }
+}

@@ -1,0 +1,205 @@
+/* 🌟 General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #343a40;
+    margin-top: 50px;
+    padding: 0;
+}
+
+/* 🌟 Align Main Content with Sidebar */
+.dashboard {
+    margin-left: 260px; /* Ensures proper alignment with sidebar */
+    padding: 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+nav.close ~ .dashboard {
+    margin-left: 90px; /* Adjust for collapsed sidebar */
+    width: calc(100% - 90px);
+}
+
+/* 🌟 Roles Management Container */
+.roles-container {
+    width: 95%;
+    max-width: 1100px;
+    margin: auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌟 Section Title */
+h2 {
+    font-size: 26px;
+    font-weight: bold;
+    color: #4a5568;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* 🌟 Layout for Roles Management */
+.roles-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+}
+
+/* 🌟 Roles Table */
+.roles-table {
+    flex: 3;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    background-color: #6f42c1; /* Purple */
+    color: #ffffff;
+    padding: 12px;
+    font-size: 16px;
+}
+
+.table tbody td {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #edf2f7;
+}
+
+/* 🌟 Roles Form */
+.roles-form {
+    flex: 1;
+    padding: 20px;
+    background-color: #edf2f7;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌟 Form Styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #4a5568;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #5a00e8;
+    box-shadow: 0 0 5px rgba(90, 0, 232, 0.4);
+}
+
+/* 🌟 Buttons */
+.btn {
+    font-size: 14px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 🌟 Save Button */
+.btn-primary {
+    background-color: #6f42c1; /* Purple */
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #5a00e8;
+}
+
+/* 🌟 Edit Button */
+.btn-edit {
+    background-color: #EEB32F; /* Yellow */
+    color: white;
+    border: none;
+}
+
+.btn-edit:hover {
+    background-color: #d9a021;
+}
+
+/* 🌟 Delete Button */
+.btn-delete {
+    background-color: #FF3131; /* Red */
+    color: white;
+    border: none;
+}
+
+.btn-delete:hover {
+    background-color: #e02525;
+}
+
+/* 🌟 Responsive Design - Laptop Mode */
+@media (max-width: 1366px) {
+    .dashboard {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+
+    .roles-content {
+        flex-direction: row;
+        gap: 15px;
+    }
+
+    .roles-content > div {
+        width: 50%;
+    }
+}
+
+/* 🌟 Responsive Design - Adjust Sidebar in Laptop Mode */
+@media (max-width: 1200px) {
+    .dashboard {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+    }
+}
+
+/* 🌟 Responsive Design - Adjust Layout */
+@media (max-width: 1024px) {
+    .roles-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .dashboard {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+    }
+}
+
+/* 🌟 Responsive Design - Sidebar Collapsed */
+@media (max-width: 992px) {
+    nav.close ~ .dashboard {
+        margin-left: 90px;
+        width: calc(100% - 90px);
+    }
+}

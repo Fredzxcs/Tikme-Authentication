@@ -1,0 +1,203 @@
+/* 🌟 General Styling */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  margin-top: 50px;
+}
+
+/* 🌟 Sidebar Compatibility */
+.dashboard {
+  margin-left: 260px;
+  padding: 20px;
+  transition: all 0.3s ease-in-out;
+}
+
+nav.close ~ .dashboard {
+  margin-left: 90px;
+  width: calc(100% - 90px);
+}
+
+/* 🌟 User Management Container */
+.user-management-container {
+  width: 95%;
+  max-width: 1100px;
+  margin: auto;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: visible; /* Ensures dropdowns are not cut off */
+  z-index: 0;
+}
+
+/* 🌟 Search Bar */
+.search-container {
+  position: relative;
+  width: 250px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+
+.search-container .search-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+}
+
+/* 🌟 Button Styling */
+.btn {
+  font-size: 14px;
+  padding: 10px 16px;
+  color: #fff;
+  background-color: #6f42c1;
+  border: none;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background-color: #5a00e8;
+}
+
+/* 🌟 Form Styling */
+.form-group {
+  flex: 1 1 calc(50% - 10px);
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+/* 🌟 Modal Styling */
+.modal-dialog {
+  max-width: 800px; /* Adjust for better width */
+  width: 90%;
+}
+
+.modal-content {
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* 🌟 Input Fields */
+.form-control, .form-select {
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #5a00e8;
+  box-shadow: 0 0 5px rgba(90, 0, 232, 0.5);
+  outline: none;
+}
+
+/* 🌟 Improve Button Design */
+.btn-primary {
+  background-color: #6f42c1;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px;
+}
+
+/* 🌟 Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: visible; /* Allow content to overflow the table container */
+  position: relative; /* Ensure z-index positioning works properly */
+}
+
+.table th, .table td {
+  text-align: center;
+  padding: 14px;
+  vertical-align: middle;
+}
+
+.table th {
+  background-color: #6f42c1;
+  color: #fff;
+}
+
+/* 🌟 Ensure Dropdown is Positioned Outside Table Container */
+.table-responsive {
+  overflow: visible !important; /* Allow the dropdown to overflow */
+}
+
+/* 🌟 Dropdown Styling */
+.dropdown-menu {
+  position: absolute !important; /* Position dropdown outside */
+  top: 100%; /* Position dropdown below the button */
+  left: 0;
+  min-width: 180px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 8px 0;
+  list-style: none;
+  z-index: 9999; /* Ensure it appears above other content */
+  display: none; /* Initially hidden */
+}
+
+/* Show Dropdown when Active */
+.dropdown-menu.show {
+  display: block;
+}
+
+/* 🌟 Dropdown Items Styling */
+.dropdown-menu .dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: start;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* 🌟 Hover Effect for Dropdown Items */
+.dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef;
+  color: #5a00e8;
+}
+
+/* Ensure Dropdown Doesn't Overflow */
+.dropdown-menu.float {
+  right: 0;
+  left: auto;
+}
+
+/* 🌟 Responsive Design */
+@media (max-width: 992px) {
+  .dashboard {
+    margin-left: 90px;
+    width: calc(100% - 90px);
+  }
+  
+  .modal-dialog {
+    max-width: 600px;
+  }
+}
+

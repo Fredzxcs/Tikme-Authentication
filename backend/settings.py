@@ -3,55 +3,26 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 from decouple import config
-
-load_dotenv()
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-yda!aa3&5g&fi(7q9-n$@g=n^lu^@p-7j)9e1@=vy2a9xav9^+'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-# Allow local and specific IPs
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+# Get environment variables directly
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+ALLOWED_HOSTS = ["authentication-oabi.onrender.com", "127.0.0.1", "localhost"]
 
 LOGIN_URL = '/admin_login/'  # Change this to your admin login URL
 
-RESERVATION_URL = config('RESERVATION_URL', default='https://tikme-reservation.onrender.com/')
-LOGISTIC_URL = config('LOGISTIC_URL', default='https://logistics.example.com/dashboard/')
-FINANCE_URL = config('FINANCE_URL', default='http://192.168.100.31:8005/')
+RESERVATION_URL = config('RESERVATION_URL', default='https://tikme-reservation.onrender.com')
+LOGISTIC_URL = config('LOGISTIC_URL', default='https://logistics-5mci.onrender.com')
+FINANCE_URL = config('FINANCE_URL', default='https://capstone-financemanagement.onrender.com')
 
 ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 MAX_FILE_SIZE_MB = 5
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',  # Set to 'INFO' or 'DEBUG' based on your requirement
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',  # Adjust to 'DEBUG' for more verbose output
-            'propagate': True,
-        },
-        'authentication': {  # Custom logger for your app
-            'handlers': ['console'],
-            'level': 'INFO',  # Use 'DEBUG' for detailed logs
-            'propagate': False,
-        },
-    },
-}
 
 # JWT Settings
 SIMPLE_JWT = {
@@ -83,10 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'corsheaders',
 ]
-
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -96,7 +64,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  
+    
 ]
 
 REST_FRAMEWORK = {
@@ -108,13 +77,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',  # Ensure public access by default
     ],
 }
-
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8003",
-    "http://localhost:8003",
-    "http://192.168.100.31:8003",
-    "http://192.168.100.31:8005",
-]
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -138,19 +100,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_USER_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-    }
-    
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')
+    )
 }
 
 
@@ -214,7 +167,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 

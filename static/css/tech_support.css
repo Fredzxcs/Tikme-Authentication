@@ -1,0 +1,110 @@
+/* General container and layout */
+.container {
+    max-width: 1000px;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 50px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Title */
+h1 {
+    color: #6f42c1; /* Similar blue as seen in the screenshot */
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+/* Form labels */
+.form-label {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* General Input and Textarea Styling */
+input[type="text"], 
+input[type="email"],
+input[type="tel"],
+textarea,
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for focus effect */
+}
+
+/* Focus effect for all input fields and textarea */
+input[type="text"]:focus, 
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+input[type="file"]:focus {
+    border-color: #5a00e8 !important; /* Add !important to override any conflicting rules */
+    box-shadow: 0 0 5px rgba(90, 0, 232, 0.3); /* Optional glowing effect */
+    outline: none; /* Remove default browser outline */
+}
+
+/* Textarea-specific styling */
+textarea {
+    resize: none; /* Prevent resizing */
+    border-radius: 5px; /* Ensure consistent border-radius */
+}
+
+
+/* Buttons */
+button[type="submit"] {
+    background-color: #6f42c1;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #5a00e8 ; /* Darken the button on hover */
+}
+
+/* Preview container styling */
+#preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Adds gap between images */
+}
+
+/* Preview image styling */
+#preview-container .preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#preview-container img {
+    max-width: 100px;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+/* Remove button styling */
+.preview-wrapper .remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
